@@ -1,0 +1,721 @@
+{{page-title "Live"}}
+
+<header class="bg-white py-24 px-6 sm:py-32 lg:px-8">
+  <div class="mx-auto max-w-2xl text-center">
+    <h2
+      class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl"
+    >{{this.model.league.name}} Live</h2>
+    <p class="mt-6 text-lg leading-8 text-gray-600">The latest scores and
+      standings for the current game week</p>
+  </div>
+</header>
+
+<div class="p-6">
+  {{#if this.loading}}
+    <p>Loading</p>
+  {{else}}
+    <ul>
+      <li>
+        <button type="button" {{on "click" (fn this.toggle "showGameWeeks")}}>
+          Game Weeks:
+          {{this.model.gameWeeks.length}}
+        </button>
+        <div class="{{if this.showGameWeeks 'block' 'hidden'}}">
+          <table class="mt-2">
+            <thead>
+              <tr>
+                <th class="border border-gray-300 px-2 bold">ID</th>
+                <th class="border border-gray-300 px-2 bold">Name</th>
+                <th class="border border-gray-300 px-2 bold">Time</th>
+                <th class="border border-gray-300 px-2 bold">Finished</th>
+                <th class="border border-gray-300 px-2 bold">Current</th>
+                <th class="border border-gray-300 px-2 bold">Next</th>
+                <th class="border border-gray-300 px-2 bold">Prev</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each this.model.gameWeeks as |gameWeek|}}
+                <tr>
+                  <td class="border border-gray-300 px-2">{{gameWeek.id}}</td>
+                  <td class="border border-gray-300 px-2">{{gameWeek.name}}</td>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{gameWeek.deadline_time}}</td>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{gameWeek.finished}}</td>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{gameWeek.is_current}}</td>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{gameWeek.is_next}}</td>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{gameWeek.is_previous}}</td>
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      </li>
+      <li>
+        <button type="button" {{on "click" (fn this.toggle "showPositions")}}>
+          Positions:
+          {{this.model.positions.length}}
+        </button>
+        <div class="{{if this.showPositions 'block' 'hidden'}}">
+          <table class="mt-2">
+            <tbody>
+              {{#each this.model.positions as |position|}}
+                <tr>
+                  <td class="border border-gray-300 px-2">{{position.id}}</td>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{position.singular_name_short}}</td>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{position.singular_name}}</td>
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      </li>
+      <li>
+        <button type="button" {{on "click" (fn this.toggle "showProTeams")}}>
+          Pro Teams:
+          {{this.model.proTeams.length}}
+        </button>
+        <div class="{{if this.showProTeams 'block' 'hidden'}}">
+          <table class="mt-2">
+            <thead>
+              <tr>
+                <th class="border border-gray-300 px-2 bold">ID</th>
+                <th class="border border-gray-300 px-2 bold">Short</th>
+                <th class="border border-gray-300 px-2 bold">Name</th>
+                <th class="border border-gray-300 px-2 bold">Code</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each this.model.proTeams as |proTeam|}}
+
+                <tr>
+                  <td class="border border-gray-300 px-2">{{proTeam.id}}</td>
+                  <td class="border border-gray-300 px-2">{{proTeam.name}}</td>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{proTeam.short_name}}</td>
+                  <td class="border border-gray-300 px-2">{{proTeam.code}}</td>
+                </tr>
+
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      </li>
+      <li>
+        <button type="button" {{on "click" (fn this.toggle "showProPlayers")}}>
+          Pro Players:
+          {{this.model.proPlayers.length}}
+        </button>
+        <div class="{{if this.showProPlayers 'block' 'hidden'}}">
+          <table class="mt-2">
+            <thead>
+              <tr>
+
+                <th class="border border-gray-300 px-2 bold">ID</th>
+                <th class="border border-gray-300 px-2 bold">Code</th>
+                <th class="border border-gray-300 px-2 bold">Pos</th>
+                <th class="border border-gray-300 px-2 bold">Name</th>
+                <th class="border border-gray-300 px-2 bold">Web Name</th>
+                <th class="border border-gray-300 px-2 bold">Team</th>
+                <th class="border border-gray-300 px-2 bold">Points</th>
+                <th class="border border-gray-300 px-2 bold">Price</th>
+
+              </tr>
+            </thead>
+            <tbody>
+              {{#each this.model.proPlayers as |proPlayer|}}
+
+                <tr>
+                  <td class="border border-gray-300 px-2">{{proPlayer.id}}</td>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{proPlayer.code}}</td>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{proPlayer.position.singular_name_short}}</td>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{proPlayer.first_name}} {{proPlayer.second_name}}</td>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{proPlayer.web_name}}</td>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{proPlayer.team.name}}</td>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{proPlayer.total_points}}</td>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{proPlayer.now_cost}}</td>
+
+                </tr>
+
+                {{log proPlayer}}
+                {{!-- <tr><td>POINTS</td></tr>
+                {{/if}} --}}
+
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      </li>
+      <li>
+        <button type="button" {{on "click" (fn this.toggle "showProFixtures")}}>
+          Pro Fixtures:
+          {{this.model.proFixtures.length}}
+        </button>
+        <div class="{{if this.showProFixtures 'block' 'hidden'}}">
+
+          <table class="mt-2">
+            <thead>
+              <tr>
+
+                <th class="border border-gray-300 px-2 bold">ID</th>
+                <th class="border border-gray-300 px-2 bold">Kickoff</th>
+                <th class="border border-gray-300 px-2 bold">Home</th>
+                <th class="border border-gray-300 px-2 bold"></th>
+                <th class="border border-gray-300 px-2 bold"></th>
+                <th class="border border-gray-300 px-2 bold">Away</th>
+                <th class="border border-gray-300 px-2 bold">Provisional</th>
+                <th class="border border-gray-300 px-2 bold">Finished</th>
+
+              </tr>
+            </thead>
+            <tbody>
+              {{#each this.model.proFixtures as |proFixture|}}
+
+                <tr>
+                  <td class="border border-gray-300 px-2">{{proFixture.id}}</td>
+
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{proFixture.kickoff_time}}</td>
+
+                  <td
+                    class="border border-gray-300 px-2 text-right"
+                  >{{proFixture.team_h.name}}</td>
+
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{proFixture.team_h_score}}</td>
+
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{proFixture.team_a_score}}</td>
+
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{proFixture.team_a.name}}</td>
+
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{proFixture.finished_provisional}}</td>
+
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{proFixture.finished}}</td>
+
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      </li>
+
+    </ul>
+
+  {{/if}}
+</div>
+
+{{!-- 
+<main class="grid grid-cols-1 lg:grid-cols-2">
+  <div class="m-6 mt-0 text-gray-900">
+    <nav
+      class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6"
+      aria-label="Pagination"
+    >
+      <div class="hidden sm:block">
+        <p class="text-sm text-gray-700">
+          Game Week
+          {{ this.currentGameWeek }}
+        </p>
+      </div>
+      <div class="flex flex-1 justify-between sm:justify-end">
+        <a
+          href="#"
+          class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        >Previous</a>
+        <a
+          href="#"
+          class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        >Next</a>
+      </div>
+    </nav>
+
+    <ul class="space-y-6">
+
+      {{#each this.matches as |match|}}
+
+        <li class="rounded-md bg-gray-100 py-2 px-6">
+          <div class="flex justify-center w-full">
+            {{#if match.finished}}
+              {{svg-jar "lock-closed" class="w-5 h-5 text-gray-700"}}
+            {{else}}
+              {{svg-jar "lock-open" class="w-5 h-5 text-gray-700"}}
+            {{/if}}</div>
+          <div class="grid grid-cols-4 sm:grid-cols-8">
+
+            <div class="col-span-3">
+              <h1
+                class="{{if match.league_entry_1_winning 'font-bold'}}"
+              >{{match.league_entry_1.entry_name}}</h1>
+              <h2>{{match.league_entry_1.player_first_name}}
+                {{match.league_entry_1.player_last_name}}</h2>
+              <div
+                class="grid grid-cols-15 w-full rounded-sm divide-x divide-white divide-opacity-50"
+              >
+                <div class="h-2 bg-gray-500"></div>
+                <div class="h-2 bg-gray-500"></div>
+                <div class="h-2 bg-gray-500"></div>
+                <div class="h-2 bg-gray-500"></div>
+                <div class="h-2 bg-gray-500"></div>
+                <div class="h-2 bg-gray-500"></div>
+                <div class="h-2 bg-gray-500"></div>
+                <div class="h-2 bg-red-500"></div>
+                <div class="h-2 bg-green-500"></div>
+                <div class="h-2 bg-green-500"></div>
+                <div class="h-2 bg-green-500"></div>
+                <div class="h-2 bg-green-500"></div>
+                <div class="h-2 bg-blue-500"></div>
+                <div class="h-2 bg-blue-500"></div>
+                <div class="h-2 bg-blue-500"></div>
+              </div>
+            </div>
+
+            <div class="py-1 text-center font-bold">
+              <div class="text-4xl">{{match.league_entry_1_points}}</div>
+              <div
+                class="text-sm opacity-10"
+              >{{match.league_entry_1.entry_id}}</div>
+            </div>
+
+            <div class="col-span-3 sm:order-5">
+
+              <table class="text-xs text-gray-500">
+                <tbody>
+                  <tr>
+                    <td class="py-1 text-left">GKP</td>
+                    <td class="py-1 text-left whitespace-nowrap w-full pl-2">
+                      <h1 class="text-gray-800">Guaita</h1>
+                      <h2>CRY</h2>
+                    </td>
+                    <td
+                      class="py-1 text-right font-semibold whitespace-nowrap"
+                    >4</td>
+                    <td class="pl-2"><div
+                        class="bg-gray-500 rounded-full h-2 w-2"
+                      ></div></td>
+                  </tr>
+                  <tr>
+                    <td class="py-1 text-left">DEF</td>
+                    <td class="py-1 text-left whitespace-nowrap w-full pl-2">
+                      <h1 class="text-gray-800">Burn</h1>
+                      <h2>NEW</h2>
+                    </td>
+                    <td
+                      class="py-1 text-right font-semibold whitespace-nowrap"
+                    >2</td>
+                    <td class="pl-2"><div
+                        class="bg-gray-500 rounded-full h-2 w-2"
+                      ></div></td>
+                  </tr>
+                  <tr>
+                    <td class="py-1 text-left">DEF</td>
+                    <td class="py-1 text-left whitespace-nowrap w-full pl-2">
+                      <h1 class="text-gray-800">Chilwell</h1>
+                      <h2>CHE</h2>
+                    </td>
+                    <td
+                      class="py-1 text-right font-semibold whitespace-nowrap"
+                    >1</td>
+                    <td class="pl-2"><div
+                        class="bg-gray-500 rounded-full h-2 w-2"
+                      ></div></td>
+                  </tr>
+                  <tr>
+                    <td class="py-1 text-left">DEF</td>
+                    <td class="py-1 text-left whitespace-nowrap w-full pl-2">
+                      <h1 class="text-gray-800">Tarkowski</h1>
+                      <h2>EVE</h2>
+                    </td>
+                    <td
+                      class="py-1 text-right font-semibold whitespace-nowrap"
+                    >LIV (A)</td>
+                    <td class="pl-2"><div
+                        class="bg-gray-500 rounded-full h-2 w-2"
+                      ></div></td>
+                  </tr>
+                  <tr>
+                    <td class="py-1 text-left">MID</td>
+                    <td class="py-1 text-left whitespace-nowrap w-full pl-2">
+                      <h1 class="text-gray-800">Ziyech</h1>
+                      <h2>CHE</h2>
+                    </td>
+                    <td
+                      class="py-1 text-right font-semibold whitespace-nowrap"
+                    >1</td>
+                    <td class="pl-2"><div
+                        class="bg-gray-500 rounded-full h-2 w-2"
+                      ></div></td>
+                  </tr>
+                  <tr>
+                    <td class="py-1 text-left">MID</td>
+                    <td class="py-1 text-left whitespace-nowrap w-full pl-2">
+                      <h1 class="text-gray-800">Mahrez</h1>
+                      <h2>MCI</h2>
+                    </td>
+                    <td
+                      class="py-1 text-right font-semibold whitespace-nowrap"
+                    >12, ARS (A)</td>
+                    <td class="pl-2"><div
+                        class="bg-green-500 rounded-full h-2 w-2"
+                      ></div></td>
+                  </tr>
+                  <tr>
+                    <td class="py-1 text-left">MID</td>
+                    <td class="py-1 text-left whitespace-nowrap w-full pl-2">
+                      <h1 class="text-gray-800">Iwobi</h1>
+                      <h2>EVE</h2>
+                    </td>
+                    <td
+                      class="py-1 text-right font-semibold whitespace-nowrap"
+                    >LIV (A)</td>
+                    <td class="pl-2"><div
+                        class="bg-gray-500 rounded-full h-2 w-2"
+                      ></div></td>
+                  </tr>
+                  <tr>
+                    <td class="py-1 text-left">MID</td>
+                    <td class="py-1 text-left whitespace-nowrap w-full pl-2">
+                      <h1 class="text-gray-800">Mount</h1>
+                      <h2>CHE</h2>
+                    </td>
+                    <td
+                      class="py-1 text-right font-semibold whitespace-nowrap"
+                    >1</td>
+                    <td class="pl-2"><div
+                        class="bg-gray-500 rounded-full h-2 w-2"
+                      ></div></td>
+                  </tr>
+                  <tr>
+                    <td class="py-1 text-left">FWD</td>
+                    <td class="py-1 text-left whitespace-nowrap w-full pl-2">
+                      <h1 class="text-gray-800">Richarlison</h1>
+                      <h2>TOT</h2>
+                    </td>
+                    <td
+                      class="py-1 text-right font-semibold whitespace-nowrap"
+                    >1</td>
+                    <td class="pl-2"><div
+                        class="bg-green-500 rounded-full h-2 w-2"
+                      ></div></td>
+                  </tr>
+                  <tr>
+                    <td class="py-1 text-left">FWD</td>
+                    <td class="py-1 text-left whitespace-nowrap w-full pl-2">
+                      <h1 class="text-gray-800">Nketiah</h1>
+                      <h2>ARS</h2>
+                    </td>
+                    <td
+                      class="py-1 text-right font-semibold whitespace-nowrap"
+                    >2</td>
+                    <td class="pl-2"><div
+                        class="bg-red-500 rounded-full h-2 w-2"
+                      ></div></td>
+                  </tr>
+                  <tr>
+                    <td class="py-1 text-left">FWD</td>
+                    <td class="py-1 text-left whitespace-nowrap w-full pl-2">
+                      <h1 class="text-gray-800">Haaland</h1>
+                      <h2>MCI</h2>
+                    </td>
+                    <td
+                      class="py-1 text-right font-semibold whitespace-nowrap"
+                    >4, ARS (A)</td>
+                    <td class="pl-2"><div
+                        class="bg-green-500 rounded-full h-2 w-2"
+                      ></div></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="col-span-3 sm:text-right sm:order-4">
+              <h1
+                class="{{if match.league_entry_2_winning 'font-bold'}}"
+              >{{match.league_entry_2.entry_name}}</h1>
+              <h2>{{match.league_entry_2.player_first_name}}
+                {{match.league_entry_2.player_last_name}}</h2>
+              <div
+                class="grid grid-cols-15 w-full rounded-sm divide-x divide-white divide-opacity-50"
+              >
+                <div class="h-2 bg-gray-500"></div>
+                <div class="h-2 bg-gray-500"></div>
+                <div class="h-2 bg-gray-500"></div>
+                <div class="h-2 bg-gray-500"></div>
+                <div class="h-2 bg-gray-500"></div>
+                <div class="h-2 bg-gray-500"></div>
+                <div class="h-2 bg-gray-500"></div>
+                <div class="h-2 bg-red-500"></div>
+                <div class="h-2 bg-green-500"></div>
+                <div class="h-2 bg-green-500"></div>
+                <div class="h-2 bg-green-500"></div>
+                <div class="h-2 bg-green-500"></div>
+                <div class="h-2 bg-blue-500"></div>
+                <div class="h-2 bg-blue-500"></div>
+                <div class="h-2 bg-blue-500"></div>
+              </div>
+
+            </div>
+
+            <div class="py-1 text-center font-bold sm:order-3">
+              <div class="text-4xl">{{match.league_entry_2_points}}</div>
+              <div
+                class="text-sm opacity-10"
+              >{{match.league_entry_2.entry_id}}</div>
+            </div>
+
+            <div class="col-span-3 sm:col-start-6 sm:order-6">
+
+              <table class="text-xs text-gray-500">
+                <tbody>
+                  <tr>
+                    <td class="py-1 text-left">GKP</td>
+                    <td class="py-1 text-left whitespace-nowrap w-full pl-2">
+                      <h1 class="text-gray-800">Guaita</h1>
+                      <h2>CRY</h2>
+                    </td>
+                    <td
+                      class="py-1 text-right font-semibold whitespace-nowrap"
+                    >4</td>
+                    <td class="pl-2"><div
+                        class="bg-green-500 rounded-full h-2 w-2"
+                      ></div></td>
+                  </tr>
+                  <tr>
+                    <td class="py-1 text-left">DEF</td>
+                    <td class="py-1 text-left whitespace-nowrap w-full pl-2">
+                      <h1 class="text-gray-800">Burn</h1>
+                      <h2>NEW</h2>
+                    </td>
+                    <td
+                      class="py-1 text-right font-semibold whitespace-nowrap"
+                    >2</td>
+                    <td class="pl-2"><div
+                        class="bg-green-500 rounded-full h-2 w-2"
+                      ></div></td>
+                  </tr>
+                  <tr>
+                    <td class="py-1 text-left">DEF</td>
+                    <td class="py-1 text-left whitespace-nowrap w-full pl-2">
+                      <h1 class="text-gray-800">Chilwell</h1>
+                      <h2>CHE</h2>
+                    </td>
+                    <td
+                      class="py-1 text-right font-semibold whitespace-nowrap"
+                    >1</td>
+                    <td class="pl-2"><div
+                        class="bg-green-500 rounded-full h-2 w-2"
+                      ></div></td>
+                  </tr>
+                  <tr>
+                    <td class="py-1 text-left">DEF</td>
+                    <td class="py-1 text-left whitespace-nowrap w-full pl-2">
+                      <h1 class="text-gray-800">Tarkowski</h1>
+                      <h2>EVE</h2>
+                    </td>
+                    <td
+                      class="py-1 text-right font-semibold whitespace-nowrap"
+                    >LIV (A)</td>
+                    <td class="pl-2"><div
+                        class="bg-green-500 rounded-full h-2 w-2"
+                      ></div></td>
+                  </tr>
+                  <tr>
+                    <td class="py-1 text-left">MID</td>
+                    <td class="py-1 text-left whitespace-nowrap w-full pl-2">
+                      <h1 class="text-gray-800">Ziyech</h1>
+                      <h2>CHE</h2>
+                    </td>
+                    <td
+                      class="py-1 text-right font-semibold whitespace-nowrap"
+                    >1</td>
+                    <td class="pl-2"><div
+                        class="bg-green-500 rounded-full h-2 w-2"
+                      ></div></td>
+                  </tr>
+                  <tr>
+                    <td class="py-1 text-left">MID</td>
+                    <td class="py-1 text-left whitespace-nowrap w-full pl-2">
+                      <h1 class="text-gray-800">Mahrez</h1>
+                      <h2>MCI</h2>
+                    </td>
+                    <td
+                      class="py-1 text-right font-semibold whitespace-nowrap"
+                    >12, ARS (A)</td>
+                    <td class="pl-2"><div
+                        class="bg-green-500 rounded-full h-2 w-2"
+                      ></div></td>
+                  </tr>
+                  <tr>
+                    <td class="py-1 text-left">MID</td>
+                    <td class="py-1 text-left whitespace-nowrap w-full pl-2">
+                      <h1 class="text-gray-800">Iwobi</h1>
+                      <h2>EVE</h2>
+                    </td>
+                    <td
+                      class="py-1 text-right font-semibold whitespace-nowrap"
+                    >LIV (A)</td>
+                    <td class="pl-2"><div
+                        class="bg-green-500 rounded-full h-2 w-2"
+                      ></div></td>
+                  </tr>
+                  <tr>
+                    <td class="py-1 text-left">MID</td>
+                    <td class="py-1 text-left whitespace-nowrap w-full pl-2">
+                      <h1 class="text-gray-800">Mount</h1>
+                      <h2>CHE</h2>
+                    </td>
+                    <td
+                      class="py-1 text-right font-semibold whitespace-nowrap"
+                    >1</td>
+                    <td class="pl-2"><div
+                        class="bg-green-500 rounded-full h-2 w-2"
+                      ></div></td>
+                  </tr>
+                  <tr>
+                    <td class="py-1 text-left">FWD</td>
+                    <td class="py-1 text-left whitespace-nowrap w-full pl-2">
+                      <h1 class="text-gray-800">Richarlison</h1>
+                      <h2>TOT</h2>
+                    </td>
+                    <td
+                      class="py-1 text-right font-semibold whitespace-nowrap"
+                    >1</td>
+                    <td class="pl-2"><div
+                        class="bg-green-500 rounded-full h-2 w-2"
+                      ></div></td>
+                  </tr>
+                  <tr>
+                    <td class="py-1 text-left">FWD</td>
+                    <td class="py-1 text-left whitespace-nowrap w-full pl-2">
+                      <h1 class="text-gray-800">Nketiah</h1>
+                      <h2>ARS</h2>
+                    </td>
+                    <td
+                      class="py-1 text-right font-semibold whitespace-nowrap"
+                    >2</td>
+                    <td class="pl-2"><div
+                        class="bg-green-500 rounded-full h-2 w-2"
+                      ></div></td>
+                  </tr>
+                  <tr>
+                    <td class="py-1 text-left">FWD</td>
+                    <td class="py-1 text-left whitespace-nowrap w-full pl-2">
+                      <h1 class="text-gray-800">Haaland</h1>
+                      <h2>MCI</h2>
+                    </td>
+                    <td
+                      class="py-1 text-right font-semibold whitespace-nowrap"
+                    >4, ARS (A)</td>
+                    <td class="pl-2"><div
+                        class="bg-green-500 rounded-full h-2 w-2"
+                      ></div></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+          <div class="text-center text-xs text-gray-500">Show Players</div>
+
+        </li>
+
+      {{/each}}
+
+    </ul>
+  </div>
+  <div>
+    <table class="w-full divide-y divide-gray-300">
+      <thead class="bg-gray-50">
+        <tr>
+          <th
+            scope="col"
+            class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 lg:pl-8"
+          >Rank</th>
+          <th
+            scope="col"
+            class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+          >Team</th>
+          <th
+            scope="col"
+            class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+          >+/-</th>
+          <th
+            scope="col"
+            class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+          >Points</th>
+          <th
+            scope="col"
+            class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+          >Week</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200 bg-white">
+        {{#each this.standings as |standing|}}
+
+          <tr>
+            <td
+              class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 lg:pl-8"
+            >{{standing.last_rank}}</td>
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+              <h1 class="font-bold">{{standing.entry.entry_name}}</h1>
+              <h2 class="">{{standing.entry.player_first_name}}
+                {{standing.entry.player_last_name}}</h2>
+            </td>
+            <td
+              class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
+            >{{standing.points_for}}</td>
+            <td
+              class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
+            >{{standing.total}}</td>
+            <td
+              class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 lg:pr-8"
+            >+3</td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+  <div>
+    <ul>
+      {{#each this.plGames as |game|}}
+        <li>{{game}}</li>
+      {{/each}}
+    </ul>
+  </div>
+</main> --}}
