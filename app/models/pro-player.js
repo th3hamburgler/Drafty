@@ -1,4 +1,4 @@
-import Model, { attr, belongsTo } from '@ember-data/model';
+import Model, { attr, belongsTo, hasMany } from '@ember-data/model';
 
 export default class ProPlayerModel extends Model {
   // Attributes
@@ -14,4 +14,6 @@ export default class ProPlayerModel extends Model {
   // Relationships
 
   @belongsTo('position') position;
+  @belongsTo('pro-team') team;
+  @hasMany('appearance') appearances;
 }

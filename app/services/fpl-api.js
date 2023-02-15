@@ -48,12 +48,8 @@ export default class FplApiService extends Service {
 
       this.gameWeeks = result.data.events;
       this.positions = this.normalizePositions(result.data.element_types);
-      this.proTeams = result.data.teams;
-      this.proPlayers = this.normalizeProPlayers(
-        result.data.elements,
-        result.data.teams,
-        result.data.element_types
-      );
+      this.proTeams = this.normalizeTeams(result.data.teams);
+      this.proPlayers = this.normalizeProPlayers(result.data.elements);
 
       return true;
     } catch (e) {
@@ -87,45 +83,64 @@ export default class FplApiService extends Service {
     return this;
   }
 
-  normalizePoints(payload, proPlayers, positions) {
-    // console.log('elements', payload.elements);
+  normalizePoints(payload) {
+    console.log('normalizePoints');
 
-    const allPoints = [];
+    const allAppearances = [];
 
-    Object.keys(payload.elements).forEach(function (playerId) {
-      const points = [payload.elements[playerId]];
+    Object.keys(payload.elements).forEach((playerId) => {
+      const appearances = [payload.elements[playerId]];
 
-      const player = proPlayers[playerId];
+      appearances.forEach((appearance) => {
+        console.log(appearance.explain.firstObject.firstObject);
 
-      if (player) {
-        // points.player = player;
-        player.points = points;
-      } else {
-        console.log('no player', playerId);
-      }
+        const explain = appearance.explain.firstObject.firstObject;
 
-      allPoints.pushObject(points);
+        const player = this.store.peekRecord('pro-player', playerId);
+
+        const model = this.store.push({
+          data: [
+            {
+              id: playerId,
+              type: 'appearance',
+              attributes: { ...appearance.stats, explain: explain },
+              relationships: {},
+            },
+          ],
+        }).firstObject;
+
+        if (player) {
+          model.player = player;
+        }
+
+        allAppearances.pushObject(model);
+      });
+
+      // if (player) {
+      //   // points.player = player;
+      //   player.points = points;
+      // } else {
+      //   // console.log('no player', playerId);
+      // }
     });
 
-    return allPoints;
+    return allAppearances;
   }
 
-  normalizeProPlayers(proPlayers, proTeams, positions) {
-    return proPlayers.map((p) => {
-      const team = proTeams.findBy('id', p.team);
-      if (team) {
-        p.team = team;
-      }
+  normalizeProPlayers(proPlayers) {
+    console.log('normalizeProPlayers');
 
+    return proPlayers.map((p) => {
       const id = p.id,
-        positionId = p.element_type;
+        positionId = p.element_type,
+        teamId = p.team;
 
       delete p.id;
       delete p.element_type;
-
-      // console.log(positionId);
+      delete p.team;
 
       const position = this.store.peekRecord('position', positionId);
+      const team = this.store.peekRecord('pro-team', teamId);
 
       const model = this.store.push({
         data: [
@@ -134,14 +149,14 @@ export default class FplApiService extends Service {
             type: 'pro_player',
             attributes: p,
             relationships: {
-              pro_players: {
-                data: [
-                  {
-                    id: positionId,
-                    type: 'position',
-                  },
-                ],
-              },
+              // pro_players: {
+              //   data: [
+              //     {
+              //       id: positionId,
+              //       type: 'position',
+              //     },
+              //   ],
+              // },
             },
           },
         ],
@@ -149,10 +164,12 @@ export default class FplApiService extends Service {
       }).firstObject;
 
       model.position = position;
+      model.team = team;
 
       return model;
     });
   }
+
   normalizePositions(positions) {
     return positions.map((position) => {
       const id = position.id;
@@ -172,17 +189,53 @@ export default class FplApiService extends Service {
   }
 
   normalizeFixtures(payload, proTeams) {
-    // console.log(payload);
-    return payload.fixtures.map((m) => {
-      const teamH = proTeams.findBy('id', m.team_h);
-      if (teamH) {
-        m.team_h = teamH;
-      }
-      const teamA = proTeams.findBy('id', m.team_a);
-      if (teamA) {
-        m.team_a = teamA;
-      }
-      return m;
+    console.log('normalizeFixtures');
+    return payload.fixtures.map((fixture) => {
+      const id = fixture.id;
+      const homeId = fixture.team_h;
+      const awayId = fixture.team_a;
+
+      delete fixture.id;
+      delete fixture.team_h;
+      delete fixture.team_a;
+
+      const home = this.store.peekRecord('pro-team', homeId);
+      const away = this.store.peekRecord('pro-team', awayId);
+
+      const model = this.store.push({
+        data: [
+          {
+            id: id,
+            type: 'pro-fixture',
+            attributes: fixture,
+            relationships: {},
+          },
+        ],
+      }).firstObject;
+
+      model.home = home;
+      model.away = away;
+
+      return model;
+    });
+  }
+
+  normalizeTeams(teams) {
+    console.log('normalizeTeams');
+    return teams.map((team) => {
+      const id = team.id;
+      delete team.id;
+
+      return this.store.push({
+        data: [
+          {
+            id: id,
+            type: 'pro_team',
+            attributes: team,
+            relationships: {},
+          },
+        ],
+      }).firstObject;
     });
   }
 

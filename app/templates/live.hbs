@@ -165,8 +165,24 @@
 
                 </tr>
 
-                {{!-- <tr><td>POINTS</td></tr>
-                {{/if}} --}}
+                {{#if proPlayer.appearances}}
+                  {{#each proPlayer.appearances as |appearance|}}
+                    <tr class="bg-gray-50">
+                      <td
+                        class="border border-gray-300 px-2"
+                      >{{appearance.total_points}}pts</td>
+                      <td
+                        colspan="7"
+                        class="border border-gray-300 px-2 text-xs"
+                      >
+                        {{#each appearance.explain as |e|}}
+                          {{e.value}}
+                          {{e.name}},
+                        {{/each}}
+                      </td>
+                    </tr>
+                  {{/each}}
+                {{/if}}
 
               {{/each}}
             </tbody>
@@ -207,7 +223,7 @@
 
                   <td
                     class="border border-gray-300 px-2 text-right"
-                  >{{proFixture.team_h.name}}</td>
+                  >{{proFixture.home.name}}</td>
 
                   <td
                     class="border border-gray-300 px-2"
@@ -219,7 +235,7 @@
 
                   <td
                     class="border border-gray-300 px-2"
-                  >{{proFixture.team_a.name}}</td>
+                  >{{proFixture.away.name}}</td>
 
                   <td
                     class="border border-gray-300 px-2"
