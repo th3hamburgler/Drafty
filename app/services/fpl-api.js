@@ -47,7 +47,7 @@ export default class FplApiService extends Service {
       const result = yield axios.get(BOOTSTRAP_STATIC);
 
       this.gameWeeks = result.data.events;
-      this.positions = result.data.element_types;
+      this.positions = this.normalizePositions(result.data.element_types);
       this.proTeams = result.data.teams;
       this.proPlayers = this.normalizeProPlayers(
         result.data.elements,
@@ -108,20 +108,6 @@ export default class FplApiService extends Service {
     });
 
     return allPoints;
-
-    // const elements = Object.entries(payload.elements);
-    // return elements.map((e, playerId) => {
-    //   // console.log(playerId, e);
-    //   const player = proPlayers.findBy('id', playerId);
-    //   if (player) {
-    //     e.player = player;
-    //     player.points = e;
-    //     // console.log(e);
-    //   } else {
-    //     console.log('no player', playerId);
-    //   }
-    //   return e;
-    // });
   }
 
   normalizeProPlayers(proPlayers, proTeams, positions) {
@@ -130,25 +116,58 @@ export default class FplApiService extends Service {
       if (team) {
         p.team = team;
       }
-      const position = positions.findBy('id', p.element_type);
-      if (position) {
-        p.position = position;
-      }
 
-      const id = p.id;
+      const id = p.id,
+        positionId = p.element_type;
+
       delete p.id;
+      delete p.element_type;
 
-      this.store.push({
+      // console.log(positionId);
+
+      const position = this.store.peekRecord('position', positionId);
+
+      const model = this.store.push({
         data: [
           {
             id: id,
-            type: 'album',
+            type: 'pro_player',
             attributes: p,
+            relationships: {
+              pro_players: {
+                data: [
+                  {
+                    id: positionId,
+                    type: 'position',
+                  },
+                ],
+              },
+            },
+          },
+        ],
+        // included: [],
+      }).firstObject;
+
+      model.position = position;
+
+      return model;
+    });
+  }
+  normalizePositions(positions) {
+    return positions.map((position) => {
+      const id = position.id;
+      delete position.id;
+
+      return this.store.push({
+        data: [
+          {
+            id: id,
+            type: 'position',
+            attributes: position,
             relationships: {},
           },
         ],
-      });
-      return p;
+      }).firstObject;
     });
   }
 
