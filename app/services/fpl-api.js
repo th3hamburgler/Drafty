@@ -32,21 +32,27 @@ export default class FplApiService extends Service {
   @tracked proPoints = [];
 
   @tracked fantasyTeams = [];
-  @tracked fantasyPlayers = [];
+  @tracked fantasyStandings = [];
   @tracked fantasyFixtures = [];
+  @tracked fantasyLeague = null;
 
   // Getters
 
   get loading() {
-    return this.getBootstrap.isRunning && this.getLiveMatches.isRunning;
+    return (
+      this.getBootstrap.isRunning &&
+      this.getLiveMatches.isRunning &&
+      this.getLeagueData.isRunning
+    );
   }
 
   // Tasks
+
   @task(function* (/*params*/) {
     try {
       const result = yield axios.get(BOOTSTRAP_STATIC);
 
-      this.gameWeeks = result.data.events;
+      this.gameWeeks = this.normalizeGameWeeks(result.data.events);
       this.positions = this.normalizePositions(result.data.element_types);
       this.proTeams = this.normalizeTeams(result.data.teams);
       this.proPlayers = this.normalizeProPlayers(result.data.elements);
@@ -74,57 +80,88 @@ export default class FplApiService extends Service {
   })
   getLiveMatches;
 
+  @task(function* (/*params*/) {
+    try {
+      const result = yield axios.get(LEAGUE_DETAILS_API);
+
+      this.fantasyLeague = this.normalizeLeague(result.data.league);
+      this.fantasyTeams = this.normalizeFantasyTeams(
+        result.data.league_entries
+      );
+      this.fantasyStandings = this.normalizeStandings(result.data.standings);
+      this.fantasyFixtures = this.normalizeFantasyFixtures(result.data.matches);
+
+      return true;
+    } catch (e) {
+      console.log(e);
+    }
+  })
+  getLeagueData;
+
   // Methods
 
-  bootstrap() {
+  async bootstrap() {
     console.log('bootstrap');
-    this.getBootstrap.perform();
-    this.getLiveMatches.perform();
+    await this.getBootstrap.perform();
+    await this.getLiveMatches.perform();
+    await this.getLeagueData.perform();
     return this;
   }
 
-  normalizePoints(payload) {
-    console.log('normalizePoints');
+  normalizeGameWeeks(weeks) {
+    console.log('normalizeGameWeeks');
+    return weeks.map((week) => {
+      const id = week.id;
+      delete week.id;
 
-    const allAppearances = [];
-
-    Object.keys(payload.elements).forEach((playerId) => {
-      const appearances = [payload.elements[playerId]];
-
-      appearances.forEach((appearance) => {
-        console.log(appearance.explain.firstObject.firstObject);
-
-        const explain = appearance.explain.firstObject.firstObject;
-
-        const player = this.store.peekRecord('pro-player', playerId);
-
-        const model = this.store.push({
-          data: [
-            {
-              id: playerId,
-              type: 'appearance',
-              attributes: { ...appearance.stats, explain: explain },
-              relationships: {},
-            },
-          ],
-        }).firstObject;
-
-        if (player) {
-          model.player = player;
-        }
-
-        allAppearances.pushObject(model);
-      });
-
-      // if (player) {
-      //   // points.player = player;
-      //   player.points = points;
-      // } else {
-      //   // console.log('no player', playerId);
-      // }
+      return this.store.push({
+        data: [
+          {
+            id: id,
+            type: 'game-week',
+            attributes: week,
+            relationships: {},
+          },
+        ],
+      }).firstObject;
     });
+  }
 
-    return allAppearances;
+  normalizePositions(positions) {
+    return positions.map((position) => {
+      const id = position.id;
+      delete position.id;
+
+      return this.store.push({
+        data: [
+          {
+            id: id,
+            type: 'position',
+            attributes: position,
+            relationships: {},
+          },
+        ],
+      }).firstObject;
+    });
+  }
+
+  normalizeTeams(teams) {
+    console.log('normalizeTeams');
+    return teams.map((team) => {
+      const id = team.id;
+      delete team.id;
+
+      return this.store.push({
+        data: [
+          {
+            id: id,
+            type: 'pro_team',
+            attributes: team,
+            relationships: {},
+          },
+        ],
+      }).firstObject;
+    });
   }
 
   normalizeProPlayers(proPlayers) {
@@ -148,16 +185,7 @@ export default class FplApiService extends Service {
             id: id,
             type: 'pro_player',
             attributes: p,
-            relationships: {
-              // pro_players: {
-              //   data: [
-              //     {
-              //       id: positionId,
-              //       type: 'position',
-              //     },
-              //   ],
-              // },
-            },
+            relationships: {},
           },
         ],
         // included: [],
@@ -167,24 +195,6 @@ export default class FplApiService extends Service {
       model.team = team;
 
       return model;
-    });
-  }
-
-  normalizePositions(positions) {
-    return positions.map((position) => {
-      const id = position.id;
-      delete position.id;
-
-      return this.store.push({
-        data: [
-          {
-            id: id,
-            type: 'position',
-            attributes: position,
-            relationships: {},
-          },
-        ],
-      }).firstObject;
     });
   }
 
@@ -220,92 +230,143 @@ export default class FplApiService extends Service {
     });
   }
 
-  normalizeTeams(teams) {
-    console.log('normalizeTeams');
-    return teams.map((team) => {
-      const id = team.id;
-      delete team.id;
+  normalizePoints(payload) {
+    console.log('normalizePoints');
 
-      return this.store.push({
+    const allAppearances = [];
+
+    Object.keys(payload.elements).forEach((playerId) => {
+      const appearances = [payload.elements[playerId]];
+
+      appearances.forEach((appearance) => {
+        const explain = appearance.explain.firstObject.firstObject;
+
+        const player = this.store.peekRecord('pro-player', playerId);
+
+        const model = this.store.push({
+          data: [
+            {
+              id: playerId,
+              type: 'appearance',
+              attributes: { ...appearance.stats, explain: explain },
+              relationships: {},
+            },
+          ],
+        }).firstObject;
+
+        if (player) {
+          model.player = player;
+        }
+
+        allAppearances.pushObject(model);
+      });
+    });
+
+    return allAppearances;
+  }
+
+  normalizeLeague(league) {
+    console.log('normalizeLeague');
+
+    const id = league.id;
+    delete league.id;
+
+    return this.store.push({
+      data: [
+        {
+          id: id,
+          type: 'fantasy-league',
+          attributes: league,
+          relationships: {},
+        },
+      ],
+    }).firstObject;
+  }
+
+  normalizeFantasyTeams(teams) {
+    try {
+      console.log('normalizeFantasyTeams');
+
+      return teams.map((team) => {
+        const id = team.id;
+        delete team.id;
+
+        return this.store.push({
+          data: [
+            {
+              id: id,
+              type: 'fantasy-team',
+              attributes: team,
+              relationships: {},
+            },
+          ],
+        }).firstObject;
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  normalizeStandings(standings) {
+    console.log('normalizeStandings');
+    return standings.map((standing) => {
+      const id = standing.league_entry,
+        teamId = standing.league_entry;
+
+      delete standing.league_entry;
+
+      const team = this.store.peekRecord('fantasy-team', teamId);
+
+      const model = this.store.push({
         data: [
           {
             id: id,
-            type: 'pro_team',
-            attributes: team,
+            type: 'fantasy-standing',
+            attributes: standing,
             relationships: {},
           },
         ],
       }).firstObject;
+
+      model.team = team;
+
+      return model;
     });
   }
 
-  // async getLiveMatches() {
-  //   try {
-  //     const result = await axios.get(EVENTS_LIVE),
-  //       fixtures = this.normalizeFixtures(result.data);
+  normalizeFantasyFixtures(fixtures) {
+    console.log('normalizeFantasyFixtures');
 
-  //     return { fixtures };
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  // }
+    return fixtures.map((fixture) => {
+      const gameWeekId = fixture.event,
+        homeId = fixture.league_entry_1,
+        awayId = fixture.league_entry_2,
+        id = `${gameWeekId}${homeId}${awayId}`;
 
-  // async getLeagueData() {
-  //   try {
-  //     const result = await axios.get(LEAGUE_DETAILS_API),
-  //       league = this.normalizeLeague(result.data),
-  //       matches = this.normalizeMatches(result.data),
-  //       standings = this.normalizeStandings(result.data);
+      delete fixture.event;
+      delete fixture.league_entry_1;
+      delete fixture.league_entry_2;
 
-  //     return { league, matches, standings };
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  // }
+      const home = this.store.peekRecord('fantasy-team', homeId);
+      const away = this.store.peekRecord('fantasy-team', awayId);
+      const gameWeek = this.store.peekRecord('game-week', gameWeekId);
 
-  async getPlayerData() {
-    try {
-    } catch (e) {
-      console.log(e);
-    }
-  }
+      const model = this.store.push({
+        data: [
+          {
+            id: id,
+            type: 'fantasy-fixture',
+            attributes: fixture,
+            relationships: {},
+          },
+        ],
+      }).firstObject;
 
-  normalizeLeague(payload) {
-    return payload.league;
-  }
+      model.home = home;
+      model.away = away;
+      model.gameWeek = gameWeek;
 
-  normalizeStandings(payload) {
-    const entries = payload.league_entries,
-      standings = payload.standings.map((s) => {
-        s.entry = entries.findBy('id', s.league_entry);
-        return s;
-      });
-    return standings;
-  }
-
-  normalizeMatches(payload) {
-    try {
-      const entries = payload.league_entries,
-        matches = payload.matches.map((m) => {
-          m.league_entry_1 = entries.findBy('id', m.league_entry_1);
-          m.league_entry_2 = entries.findBy('id', m.league_entry_2);
-
-          if (m.league_entry_1_points > m.league_entry_2_points) {
-            m.league_entry_1_winning = true;
-            m.league_entry_2_winning = false;
-          } else if (m.league_entry_1_points < m.league_entry_2_points) {
-            m.league_entry_1_winning = false;
-            m.league_entry_2_winning = true;
-          } else {
-            m.league_entry_1_winning = false;
-            m.league_entry_2_winning = false;
-          }
-
-          return m;
-        });
-      return matches;
-    } catch (e) {
-      console.log(e);
-    }
+      return model;
+    });
   }
 }

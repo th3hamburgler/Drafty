@@ -15,6 +15,7 @@
     <p>Loading</p>
   {{else}}
     <ul>
+      {{! Game Weeks }}
       <li>
         <button type="button" {{on "click" (fn this.toggle "showGameWeeks")}}>
           Game Weeks:
@@ -59,6 +60,7 @@
           </table>
         </div>
       </li>
+      {{! Positions }}
       <li>
         <button type="button" {{on "click" (fn this.toggle "showPositions")}}>
           Positions:
@@ -82,6 +84,7 @@
           </table>
         </div>
       </li>
+      {{! Pro Teams }}
       <li>
         <button type="button" {{on "click" (fn this.toggle "showProTeams")}}>
           Pro Teams:
@@ -114,6 +117,7 @@
           </table>
         </div>
       </li>
+      {{! Pro Players }}
       <li>
         <button type="button" {{on "click" (fn this.toggle "showProPlayers")}}>
           Pro Players:
@@ -189,6 +193,7 @@
           </table>
         </div>
       </li>
+      {{! Pro Fixtures }}
       <li>
         <button type="button" {{on "click" (fn this.toggle "showProFixtures")}}>
           Pro Fixtures:
@@ -245,6 +250,108 @@
                     class="border border-gray-300 px-2"
                   >{{proFixture.finished}}</td>
 
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      </li>
+      {{! Fantasy Fixtures }}
+      <li>
+        <button
+          type="button"
+          {{on "click" (fn this.toggle "showFantasyFixtures")}}
+        >
+          Fixtures:
+          {{this.model.fantasyFixtures.length}}
+        </button>
+        <div class="{{if this.showFantasyFixtures 'block' 'hidden'}}">
+          <table class="mt-2">
+            <thead>
+              <tr>
+                <th class="border border-gray-300 px-2 bold">Game Week</th>
+                <th class="border border-gray-300 px-2 bold">Home</th>
+                <th class="border border-gray-300 px-2 bold"></th>
+                <th class="border border-gray-300 px-2 bold"></th>
+                <th class="border border-gray-300 px-2 bold">Away</th>
+                <th class="border border-gray-300 px-2 bold">Started</th>
+                <th class="border border-gray-300 px-2 bold">Finished</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each this.model.fantasyFixtures as |fixture|}}
+                <tr>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{fixture.gameWeek.name}}</td>
+                  <td
+                    class="border border-gray-300 px-2 text-right"
+                  >{{fixture.home.entry_name}}</td>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{fixture.homeScore}}</td>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{fixture.awayScore}}</td>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{fixture.away.entry_name}}</td>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{fixture.started}}</td>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{fixture.finished}}</td>
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      </li>
+      {{! Fantasy League }}
+      <li>
+        <button
+          type="button"
+          {{on "click" (fn this.toggle "showFantasyLeague")}}
+        >
+          League:
+          {{this.model.fantasyStandings.length}}
+        </button>
+        <div class="{{if this.showFantasyLeague 'block' 'hidden'}}">
+          <table class="mt-2">
+            <thead>
+              <tr>
+                <th class="border border-gray-300 px-2 bold">Rank</th>
+                <th class="border border-gray-300 px-2 bold">Team</th>
+                <th class="border border-gray-300 px-2 bold">P</th>
+                <th class="border border-gray-300 px-2 bold">W</th>
+                <th class="border border-gray-300 px-2 bold">D</th>
+                <th class="border border-gray-300 px-2 bold">L</th>
+                <th class="border border-gray-300 px-2 bold">Points</th>
+                <th class="border border-gray-300 px-2 bold">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each this.model.fantasyStandings as |standing|}}
+                <tr>
+                  <td class="border border-gray-300 px-2">{{standing.rank}}</td>
+                  <td
+                    class="border border-gray-300 px-2 text-right"
+                  >{{standing.team.entry_name}}</td>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{standing.played}}</td>
+                  <td class="border border-gray-300 px-2">{{standing.won}}</td>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{standing.drawn}}</td>
+                  <td class="border border-gray-300 px-2">{{standing.lost}}</td>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{standing.points_for}}</td>
+                  <td
+                    class="border border-gray-300 px-2"
+                  >{{standing.total}}</td>
                 </tr>
               {{/each}}
             </tbody>

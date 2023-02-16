@@ -15,6 +15,8 @@ export default class LiveController extends Controller {
   @tracked showProTeams = false;
   @tracked showProPlayers = false;
   @tracked showProFixtures = false;
+  @tracked showFantasyFixtures = false;
+  @tracked showFantasyLeague = true;
 
   // Getters
 
