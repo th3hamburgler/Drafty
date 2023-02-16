@@ -24,4 +24,12 @@ export default class FantasyFixtureModel extends Model {
   get awayScore() {
     return this.league_entry_2_points;
   }
+
+  get homeWin() {
+    return this.league_entry_1_points > this.league_entry_2_points;
+  }
+
+  get awayWin() {
+    return this.league_entry_2_points > this.league_entry_1_points;
+  }
 }

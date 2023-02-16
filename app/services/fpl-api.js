@@ -1,7 +1,7 @@
 import Service from '@ember/service';
 import { inject as service } from '@ember/service';
 import { tracked } from '@glimmer/tracking';
-import { task } from 'ember-concurrency';
+import { task, all } from 'ember-concurrency';
 import axios from 'axios';
 import { isArray } from '@ember/array';
 
@@ -13,7 +13,7 @@ const DRAFT_API = 'https://draft.premierleague.com/api',
   EVENTS_LIVE = `${DRAFT_API}/event/23/live`,
   BOOTSTRAP_STATIC = `${FPL_API}/bootstrap-static/`,
   FIXTURES = `${FPL_API}/fixtures`,
-  PICKS = `${DRAFT_API}/entry/:manager_id/event/23`;
+  PICKS = `${DRAFT_API}/entry/:manager_id/event/:event_id`;
 
 export default class FplApiService extends Service {
   // Services
@@ -35,6 +35,7 @@ export default class FplApiService extends Service {
   @tracked fantasyStandings = [];
   @tracked fantasyFixtures = [];
   @tracked fantasyLeague = null;
+  @tracked fantasyPicks = [];
 
   // Getters
 
@@ -42,8 +43,34 @@ export default class FplApiService extends Service {
     return (
       this.getBootstrap.isRunning &&
       this.getLiveMatches.isRunning &&
-      this.getLeagueData.isRunning
+      this.getLeagueData.isRunning &&
+      this.getTeamData.isRunning
     );
+  }
+
+  get currentGameWeek() {
+    if (this.loading) {
+      return;
+    }
+    const gameWeek = this.gameWeeks.find((week) => {
+      return week.is_current;
+    });
+
+    if (gameWeek) {
+      return gameWeek.id;
+    }
+    return 1;
+  }
+
+  get currentFantasyFixtures() {
+    if (this.loading) {
+      return [];
+    }
+    const currentGameWeek = this.currentGameWeek;
+
+    return this.fantasyFixtures.filter((f) => {
+      return f.gameWeek.get('id') === currentGameWeek;
+    });
   }
 
   // Tasks
@@ -98,6 +125,28 @@ export default class FplApiService extends Service {
   })
   getLeagueData;
 
+  @task(function* (team, gameWeekId) {
+    try {
+      const result = yield axios.get(
+        PICKS.replace(':manager_id', team.entry_id).replace(
+          ':event_id',
+          gameWeekId
+        )
+      );
+
+      const gameWeek = this.store.peekRecord('game-week', gameWeekId);
+
+      this.fantasyPicks.addObjects(
+        this.normalizePicks(result.data, team, gameWeek)
+      );
+
+      return true;
+    } catch (e) {
+      console.log(e);
+    }
+  })
+  getTeamData;
+
   // Methods
 
   async bootstrap() {
@@ -105,6 +154,15 @@ export default class FplApiService extends Service {
     await this.getBootstrap.perform();
     await this.getLiveMatches.perform();
     await this.getLeagueData.perform();
+
+    // get picks
+    const teams = [];
+    this.fantasyTeams.map((team) => {
+      this.getTeamData.perform(team, 23);
+    });
+
+    await all(teams);
+
     return this;
   }
 
@@ -364,6 +422,36 @@ export default class FplApiService extends Service {
 
       model.home = home;
       model.away = away;
+      model.gameWeek = gameWeek;
+
+      return model;
+    });
+  }
+
+  normalizePicks(payload, fantasyTeam, gameWeek) {
+    console.log('normalizePicks');
+
+    return payload.picks.map((pick) => {
+      const id = pick.element,
+        proPlayerId = pick.element;
+
+      delete pick.element;
+
+      const player = this.store.peekRecord('pro-player', proPlayerId);
+
+      const model = this.store.push({
+        data: [
+          {
+            id: id,
+            type: 'fantasy-pick',
+            attributes: pick,
+            relationships: {},
+          },
+        ],
+      }).firstObject;
+
+      model.player = player;
+      model.team = fantasyTeam;
       model.gameWeek = gameWeek;
 
       return model;

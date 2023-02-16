@@ -16,4 +16,11 @@ export default class ProPlayerModel extends Model {
   @belongsTo('position') position;
   @belongsTo('pro-team') team;
   @hasMany('appearance') appearances;
+  @hasMany('fantasy-pick') picks;
+
+  // Aliases
+
+  get appearance() {
+    return this.appearances.firstObject;
+  }
 }

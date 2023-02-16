@@ -28,22 +28,6 @@ export default class LiveController extends Controller {
   @action toggle(prop) {
     this[prop] = !this[prop];
   }
-  // get currentGameWeek() {
-  //   if (this.loading) {
-  //     return;
-  //   }
-  //   const matches = this.model.league.value.matches,
-  //     result = matches.find((match) => {
-  //       if (match.finished === false) {
-  //         return match.event;
-  //       }
-  //     });
-
-  //   if (result) {
-  //     return result.event;
-  //   }
-  //   return 1;
-  // }
 
   // get maxGameWeek() {
   //   return 38;

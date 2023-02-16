@@ -16,4 +16,5 @@ export default class FantasyTeamModel extends Model {
   @belongsTo('fantasy-standing') standing;
   @hasMany('fantasy-fixture', { inverse: 'home' }) homeFixtures;
   @hasMany('fantasy-fixture', { inverse: 'away' }) awayFixtures;
+  @hasMany('fantasy-pick') picks;
 }

@@ -28,4 +28,5 @@ export default class GameWeekModel extends Model {
 
   // Relationships
   @hasMany('fantasy-fixture') fantasyFixtures;
+  @hasMany('fantasy-pick') picks;
 }
