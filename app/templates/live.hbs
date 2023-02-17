@@ -105,15 +105,17 @@
                         class="align-top py-2 text-left whitespace-nowrap w-full pl-2"
                       >
                         <table class="w-full text-gray-400">
+
                           <tbody>
-                            {{#each
-                              pick.player.appearance.pointsDescriptions
-                              as |desc|
-                            }}
-                              <tr>
-                                <td>{{desc.text}}</td>
-                                <td class="px-2 text-right">{{desc.points}}</td>
-                              </tr>
+                            {{#each pick.player.appearances as |appearance|}}
+                              {{#each appearance.pointsDescriptions as |desc|}}
+                                <tr>
+                                  <td>{{desc.text}}</td>
+                                  <td
+                                    class="px-2 text-right"
+                                  >{{desc.points}}</td>
+                                </tr>
+                              {{/each}}
                             {{/each}}
                           </tbody>
                         </table>
@@ -301,7 +303,7 @@
   </div>
 </main>
 
-<!--
+{{!--
 <div class="p-6">
   {{#if this.loading}}
     <p>Loading</p>
@@ -676,4 +678,4 @@
     </ul>
   {{/if}}
 </div>
--->
+--}}

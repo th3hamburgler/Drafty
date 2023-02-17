@@ -73,6 +73,27 @@ export default class FplApiService extends Service {
     });
   }
 
+  get leader() {
+    if (this.loading) {
+      return;
+    }
+    const standing = this.fantasyStandings[0];
+    return standing;
+  }
+
+  get looser() {
+    if (this.loading) {
+      return;
+    }
+    const standing = this.fantasyStandings[9];
+    return standing;
+  }
+
+  get flatTrackBully() {
+    // Sort with highest points p score
+    return this.fantasyStandings.toArray().sortBy('pointsPerScore').lastObject;
+  }
+
   // Tasks
 
   @task(function* (/*params*/) {
