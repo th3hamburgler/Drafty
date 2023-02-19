@@ -16,7 +16,10 @@
     />
   </div>
 
-  <Game::Fantasy::Fixture::Score @match={{@match}} />
+  <Game::Fantasy::Fixture::Score
+    @score={{@match.homeScore}}
+    @liveScore={{@match.homeLiveScore}}
+  />
 
   {{#if this.showDetails}}
     <div class="col-span-4 sm:order-5 5 sm:mr-3">
@@ -35,10 +38,10 @@
     />
   </div>
 
-  <div class="py-1 text-center font-bold sm:order-3">
-    <div class="text-4xl">{{@match.awayScore}}</div>
-    <div class="text-sm opacity-10">{{@match.away.entry_id}}</div>
-  </div>
+  <Game::Fantasy::Fixture::Score
+    @score={{@match.awayScore}}
+    @liveScore={{@match.awayLiveScore}}
+  />
 
   {{#if this.showDetails}}
     <div class="col-span-4 sm:col-start-5 sm:ml-3 sm:order-6">

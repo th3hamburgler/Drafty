@@ -1,6 +1,12 @@
 import Model, { attr, belongsTo } from '@ember-data/model';
 import { singularize, pluralize } from 'ember-inflector';
 
+const APPEARANCE_STATUS = {
+  PENDING: 'pending',
+  PLAYED: 'played',
+  BENCHED: 'benched',
+  PLAYING: 'playing',
+};
 export default class AppearanceModel extends Model {
   // Attributes
 
@@ -62,22 +68,46 @@ export default class AppearanceModel extends Model {
     }
   }
 
-  get appearanceColor() {
+  get status() {
     const fixture = this.player.get('team.fixture');
-
-    console.log(this.player.get('web_name'), fixture.started);
 
     if (!fixture.started) {
       // game not started
-      return 'bg-cyan';
+      return APPEARANCE_STATUS.PENDING;
     } else if (this.minutes > 0 && fixture.finished) {
       // played
-      return 'bg-lime';
+      return APPEARANCE_STATUS.PLAYED;
     } else if (fixture.started && this.minutes === 0) {
       // did not play
-      return 'bg-red';
+      return APPEARANCE_STATUS.BENCHED;
     } else {
-      return 'bg-yellow';
+      return APPEARANCE_STATUS.PLAYING;
+    }
+  }
+
+  get color() {
+    switch (this.status) {
+      case APPEARANCE_STATUS.PENDING:
+        return 'bg-cyan';
+      case APPEARANCE_STATUS.PLAYED:
+        return 'bg-lime';
+      case APPEARANCE_STATUS.BENCHED:
+        return 'bg-red';
+      case APPEARANCE_STATUS.PLAYING:
+        return 'bg-yellow';
+    }
+  }
+
+  get description() {
+    switch (this.status) {
+      case APPEARANCE_STATUS.PENDING:
+        return `${this.player.get('web_name')} pending`;
+      case APPEARANCE_STATUS.PLAYED:
+        return `${this.player.get('web_name')} played`;
+      case APPEARANCE_STATUS.BENCHED:
+        return `${this.player.get('web_name')} was benched`;
+      case APPEARANCE_STATUS.PLAYING:
+        return `${this.player.get('web_name')} currently playing`;
     }
   }
 }

@@ -121,18 +121,20 @@
         >
           {{#each this.model.proFixtures as |game|}}
 
-            <div class="py-2 opacity-70">{{moment-format
+            <div class="h-16 flex items-center py-2 opacity-70">{{moment-format
                 game.kickoff_time
                 "ddd Do"
               }}</div>
             <div
-              class="py-2 text-left font-bold text-lg md:text-2xl"
+              class="h-16 flex items-center py-2 text-left font-bold text-lg md:text-2xl"
             >{{game.home.short_name}}</div>
-            <div class="py-2 text-center text-3xl font-bold">
+            <div
+              class="h-16 flex items-center py-2 text-center text-3xl font-bold"
+            >
               {{game.score}}
             </div>
             <div
-              class="py-2 text-right font-bold text-lg md:text-2xl"
+              class="h-16 flex items-center py-2 text-right font-bold text-lg md:text-2xl"
             >{{game.away.short_name}}</div>
 
           {{/each}}

@@ -5,8 +5,10 @@ import { task, all } from 'ember-concurrency';
 import axios from 'axios';
 import { isArray } from '@ember/array';
 
-const DRAFT_API = 'https://draft.premierleague.com/api',
-  FPL_API = 'https://fantasy.premierleague.com/api',
+const ACCESS_KEY = 'f9a0d214fd6ea502e71561e1117c5f0d',
+  PROXY = `http://api.scrapestack.com/scrape?access_key=${ACCESS_KEY}&url=`,
+  DRAFT_API = `${PROXY}https://draft.premierleague.com/api`,
+  FPL_API = `${PROXY}https://fantasy.premierleague.com/api`,
   LEAGUE_DETAILS_API = `${DRAFT_API}/league/46575/details`,
   GAME_API = `${DRAFT_API}/game`,
   LEAGUE_ELEMENTS = `${DRAFT_API}/league/46575/element-status`,

@@ -45,4 +45,40 @@ export default class FantasyFixtureModel extends Model {
       return 'bg-cyan';
     }
   }
+
+  get homeLiveScore() {
+    let score = 0;
+    // console.log(this.home.short_name);
+    this.home.get('picks').forEach((p, i) => {
+      if (i < 11) {
+        console.log(
+          p.get('player.web_name'),
+          p.multiplier,
+          p.multiplier * p.get('appearance.total_points')
+        );
+        score += p.multiplier * p.get('appearance.total_points');
+      } else {
+        console.log(p.get('player.web_name'));
+      }
+    });
+    return score;
+  }
+
+  get awayLiveScore() {
+    let score = 0;
+    // console.log(this.away.short_name);
+    this.away.get('picks').forEach((p, i) => {
+      if (i < 11) {
+        console.log(
+          p.get('player.web_name'),
+          p.multiplier,
+          p.multiplier * p.get('appearance.total_points')
+        );
+        score += p.multiplier * p.get('appearance.total_points');
+      } else {
+        console.log(p.get('player.web_name'));
+      }
+    });
+    return score;
+  }
 }
