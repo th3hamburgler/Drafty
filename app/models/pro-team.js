@@ -27,4 +27,17 @@ export default class ProTeamModel extends Model {
   // Relationships
 
   @hasMany('pro-player') players;
+  @hasMany('pro-fixture', { inverse: 'home' }) homeFixtures;
+  @hasMany('pro-fixture', { inverse: 'away' }) awayFixtures;
+
+  // Getters
+  get fixture() {
+    if (this.homeFixtures.length) {
+      return this.homeFixtures.firstObject;
+    }
+    if (this.awayFixtures.length) {
+      return this.awayFixtures.firstObject;
+    }
+    return null;
+  }
 }

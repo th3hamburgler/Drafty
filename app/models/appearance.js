@@ -63,8 +63,19 @@ export default class AppearanceModel extends Model {
   }
 
   get appearanceColor() {
-    if (this.minutes > 0) {
+    const fixture = this.player.get('team.fixture');
+
+    console.log(this.player.get('web_name'), fixture.started);
+
+    if (!fixture.started) {
+      // game not started
+      return 'bg-cyan';
+    } else if (this.minutes > 0 && fixture.finished) {
+      // played
       return 'bg-lime';
+    } else if (fixture.started && this.minutes === 0) {
+      // did not play
+      return 'bg-red';
     } else {
       return 'bg-yellow';
     }
