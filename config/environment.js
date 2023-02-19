@@ -42,6 +42,9 @@ module.exports = function (environment) {
 
   if (environment === 'production') {
     // here you can enable a production-specific feature
+
+    ENV.rootURL = '/drafty';
+    ENV.locationType = 'hash';
   }
 
   return ENV;
