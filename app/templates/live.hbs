@@ -1,681 +1,150 @@
 {{page-title "Live"}}
+<div class="min-h-screen w-full bg-black">
 
-<header class="bg-white py-24 px-6 sm:py-32 lg:px-8">
-  <div class="mx-auto max-w-2xl text-center">
-    <h2
-      class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl"
-    >{{this.model.league.name}} Live</h2>
-    <p class="mt-6 text-lg leading-8 text-gray-600">The latest scores and
-      standings for the current game week</p>
-  </div>
-</header>
+  <nav label="main" class="px-6 py-2 bg-purple text-white flex justify-between">
 
-<main class="grid grid-cols-1 3xl:grid-cols-2">
-  <div class="m-6 mt-0 text-gray-900">
-    <nav
-      class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6"
-      aria-label="Pagination"
-    >
-      <div class="hidden sm:block">
-        <p class="text-sm text-gray-700">
-          Game Week
-          {{this.model.currentGameWeek}}
-        </p>
-      </div>
-      <div class="flex flex-1 justify-between sm:justify-end">
-        <a
-          href="#"
-          class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-        >Previous</a>
-        <a
-          href="#"
-          class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-        >Next</a>
-      </div>
-    </nav>
-
-    <ul class="space-y-6">
-
-      {{#each this.model.currentFantasyFixtures as |match|}}
-
-        <li class="rounded-md bg-gray-100 py-2 px-6">
-          <div class="flex justify-center w-full">
-            {{#if match.finished}}
-              {{svg-jar "lock-closed" class="w-5 h-5 text-gray-700"}}
-            {{else}}
-              {{svg-jar "lock-open" class="w-5 h-5 text-gray-700"}}
-            {{/if}}</div>
-          <div class="grid grid-cols-4 sm:grid-cols-8">
-
-            <div class="col-span-3">
-              <h1
-                class="{{if match.homeWin 'font-bold'}}"
-              >{{match.home.entry_name}}</h1>
-              <h2>{{match.home.player_first_name}}
-                {{match.home.player_last_name}}</h2>
-              <div
-                class="grid grid-cols-15 w-full rounded-sm divide-x divide-white divide-opacity-50"
-              >
-                <div class="h-2 bg-gray-500"></div>
-                <div class="h-2 bg-gray-500"></div>
-                <div class="h-2 bg-gray-500"></div>
-                <div class="h-2 bg-gray-500"></div>
-                <div class="h-2 bg-gray-500"></div>
-                <div class="h-2 bg-gray-500"></div>
-                <div class="h-2 bg-gray-500"></div>
-                <div class="h-2 bg-red-500"></div>
-                <div class="h-2 bg-green-500"></div>
-                <div class="h-2 bg-green-500"></div>
-                <div class="h-2 bg-green-500"></div>
-                <div class="h-2 bg-green-500"></div>
-                <div class="h-2 bg-blue-500"></div>
-                <div class="h-2 bg-blue-500"></div>
-                <div class="h-2 bg-blue-500"></div>
-              </div>
-            </div>
-
-            <div class="py-1 text-center font-bold">
-              <div class="text-4xl">{{match.homeScore}}</div>
-              <div class="text-sm opacity-10">{{match.home.entry_id}}</div>
-            </div>
-
-            <div class="col-span-3 sm:order-5">
-
-              <table class="w-full text-xs text-gray-500">
-                <tbody>
-                  {{#each match.home.picks as |pick|}}
-                    <tr
-                      class="{{if
-                          (gt pick.position 11)
-                          'bg-gray-200 opacity-75 border-b border-gray-300'
-                          'border-b border-gray-200'
-                        }}
-                        "
-                    >
-                      <td
-                        class="align-top pl-2 py-4 text-left"
-                      >{{pick.player.position.singular_name_short}}</td>
-                      <td
-                        class="align-top py-2 text-left whitespace-nowrap w-full pl-2"
-                      >
-                        <h1 class="text-gray-800">{{pick.player.web_name}}</h1>
-                        <h2>{{pick.player.team.short_name}}</h2>
-                      </td>
-                      <td
-                        class="align-top py-2 text-left whitespace-nowrap w-full pl-2"
-                      >
-                        <table class="w-full text-gray-400">
-
-                          <tbody>
-                            {{#each pick.player.appearances as |appearance|}}
-                              {{#each appearance.pointsDescriptions as |desc|}}
-                                <tr>
-                                  <td>{{desc.text}}</td>
-                                  <td
-                                    class="px-2 text-right"
-                                  >{{desc.points}}</td>
-                                </tr>
-                              {{/each}}
-                            {{/each}}
-                          </tbody>
-                        </table>
-
-                      </td>
-                      <td
-                        class="align-top py-2 text-center font-semibold text-xl whitespace-nowrap"
-                      >
-                        {{pick.player.appearance.total_points}}
-                      </td>
-                      <td class="align-top pl-2 pr-2 py-4"><div
-                          class="{{if
-                              match.finished
-                              'bg-green-500'
-                              'bg-gray-500'
-                            }}
-                            rounded-full h-2 w-2 my-0.5"
-                        ></div></td>
-                    </tr>
-                  {{/each}}
-                </tbody>
-              </table>
-
-            </div>
-
-            <div class="col-span-3 sm:text-right sm:order-4">
-              <h1
-                class="{{if match.awayWin 'font-bold'}}"
-              >{{match.away.entry_name}}</h1>
-              <h2>{{match.away.player_first_name}}
-                {{match.away.player_last_name}}</h2>
-              <div
-                class="grid grid-cols-15 w-full rounded-sm divide-x divide-white divide-opacity-50"
-              >
-                <div class="h-2 bg-gray-500"></div>
-                <div class="h-2 bg-gray-500"></div>
-                <div class="h-2 bg-gray-500"></div>
-                <div class="h-2 bg-gray-500"></div>
-                <div class="h-2 bg-gray-500"></div>
-                <div class="h-2 bg-gray-500"></div>
-                <div class="h-2 bg-gray-500"></div>
-                <div class="h-2 bg-red-500"></div>
-                <div class="h-2 bg-green-500"></div>
-                <div class="h-2 bg-green-500"></div>
-                <div class="h-2 bg-green-500"></div>
-                <div class="h-2 bg-green-500"></div>
-                <div class="h-2 bg-blue-500"></div>
-                <div class="h-2 bg-blue-500"></div>
-                <div class="h-2 bg-blue-500"></div>
-              </div>
-
-            </div>
-
-            <div class="py-1 text-center font-bold sm:order-3">
-              <div class="text-4xl">{{match.awayScore}}</div>
-              <div class="text-sm opacity-10">{{match.away.entry_id}}</div>
-            </div>
-
-            <div class="col-span-3 sm:col-start-6 sm:order-6">
-
-              <table class="w-full text-xs text-gray-500">
-                <tbody>
-                  {{#each match.home.picks as |pick|}}
-                    <tr
-                      class="{{if
-                          (gt pick.position 11)
-                          'bg-gray-200 opacity-75 border-b border-gray-300'
-                          'border-b border-gray-200'
-                        }}
-                        "
-                    >
-                      <td
-                        class="align-top pl-2 py-4 text-left"
-                      >{{pick.player.position.singular_name_short}}</td>
-                      <td
-                        class="align-top py-2 text-left whitespace-nowrap w-full pl-2"
-                      >
-                        <h1 class="text-gray-800">{{pick.player.web_name}}</h1>
-                        <h2>{{pick.player.team.short_name}}</h2>
-                      </td>
-                      <td
-                        class="align-top py-2 text-left whitespace-nowrap w-full pl-2"
-                      >
-                        <table class="w-full text-gray-400">
-                          <tbody>
-                            {{#each
-                              pick.player.appearance.pointsDescriptions
-                              as |desc|
-                            }}
-                              <tr>
-                                <td>{{desc.text}}</td>
-                                <td class="px-2 text-right">{{desc.points}}</td>
-                              </tr>
-                            {{/each}}
-                          </tbody>
-                        </table>
-
-                      </td>
-                      <td
-                        class="align-top py-2 text-center font-semibold text-xl whitespace-nowrap"
-                      >
-                        {{pick.player.appearance.total_points}}
-                      </td>
-                      <td class="align-top pl-2 pr-2 py-4"><div
-                          class="{{if
-                              match.finished
-                              'bg-green-500'
-                              'bg-gray-500'
-                            }}
-                            rounded-full h-2 w-2 my-0.5"
-                        ></div></td>
-                    </tr>
-                  {{/each}}
-                </tbody>
-              </table>
-            </div>
-
-          </div>
-          <div class="text-center text-xs text-gray-500">Show Players</div>
-
-        </li>
-
-      {{/each}}
-
+    <h1 class="text-lg uppercase font-bold">Drafty</h1>
+    <ul class="text-lg uppercase font-bold flex justify-end gap-12">
+      <li>Dashboard</li>
+      <li>Match Day</li>
+      <li>Transfers</li>
     </ul>
-  </div>
-  <div>
-    <table class="w-full divide-y divide-gray-300">
-      <thead class="bg-gray-50">
-        <tr>
-          <th
-            scope="col"
-            class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 lg:pl-8"
-          >Rank</th>
-          <th
-            scope="col"
-            class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-          >Team</th>
-          <th
-            scope="col"
-            class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-          >+/-</th>
-          <th
-            scope="col"
-            class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-          >Points</th>
-          <th
-            scope="col"
-            class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-          >Week</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-200 bg-white">
-        {{#each this.standings as |standing|}}
+  </nav>
 
-          <tr>
-            <td
-              class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 lg:pl-8"
-            >{{standing.last_rank}}</td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-              <h1 class="font-bold">{{standing.entry.entry_name}}</h1>
-              <h2 class="">{{standing.entry.player_first_name}}
-                {{standing.entry.player_last_name}}</h2>
-            </td>
-            <td
-              class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-            >{{standing.points_for}}</td>
-            <td
-              class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-            >{{standing.total}}</td>
-            <td
-              class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 lg:pr-8"
-            >+3</td>
-          </tr>
+  <header class="bg-purple text-white py-24 px-6 sm:py-32 lg:px-8">
+    <div class="mx-auto max-w-2xl text-center">
+      <h2
+        class="text-4xl font-bold tracking-tight sm:text-6xl"
+      >{{this.model.league.name}} Live</h2>
+      <p class="mt-6 text-lg leading-8 opacity-70">The latest scores and
+        standings for the current game week</p>
+    </div>
+  </header>
+
+  <main class="grid grid-cols-1 xl:grid-cols-2 p-6 gap-6 3xl:grid-cols-2">
+
+    <div class="space-y-6">
+
+      <nav
+        label="pagination"
+        class="flex items-center justify-between border-t-4 border-cyan bg-purple text-white px-4 py-3 sm:px-6"
+        aria-label="Pagination"
+      >
+        <div class="hidden sm:block">
+          <p class="text-sm">
+            Game Week
+            {{this.model.currentGameWeek.id}}
+          </p>
+        </div>
+        <div class="flex flex-1 justify-between sm:justify-end">
+          <a
+            href="#"
+            class="relative inline-flex items-center rounded-md bg-cyan px-4 py-2 text-sm font-medium text-black hover:opacity-90"
+          >Previous</a>
+          <a
+            href="#"
+            class="relative ml-3 inline-flex items-center rounded-md bg-cyan px-4 py-2 text-sm font-medium text-black hover:opacity-90"
+          >Next</a>
+        </div>
+      </nav>
+
+      <ul class="grid grid-cols-1 gap-6">
+
+        {{#each this.model.currentFantasyFixtures as |match|}}
+
+          <li class="bg-purple border-t-4 border-lime text-white py-2 px-6">
+
+            <Game::Fantasy::Fixture @match={{match}} />
+
+          </li>
+
         {{/each}}
-      </tbody>
-    </table>
-  </div>
-  <div>
-    <ul>
-      {{#each this.plGames as |game|}}
-        <li>{{game}}</li>
-      {{/each}}
-    </ul>
-  </div>
-</main>
 
-{{!--
-<div class="p-6">
-  {{#if this.loading}}
-    <p>Loading</p>
-  {{else}}
-    <ul>
-      {{! Game Weeks }}
-      <li>
-        <button type="button" {{on "click" (fn this.toggle "showGameWeeks")}}>
-          Game Weeks:
-          {{this.model.gameWeeks.length}}
-        </button>
-        <div class="{{if this.showGameWeeks 'block' 'hidden'}}">
-          <table class="mt-2">
-            <thead>
-              <tr>
-                <th class="border border-gray-300 px-2 bold">ID</th>
-                <th class="border border-gray-300 px-2 bold">Name</th>
-                <th class="border border-gray-300 px-2 bold">Time</th>
-                <th class="border border-gray-300 px-2 bold">Finished</th>
-                <th class="border border-gray-300 px-2 bold">Current</th>
-                <th class="border border-gray-300 px-2 bold">Next</th>
-                <th class="border border-gray-300 px-2 bold">Prev</th>
-              </tr>
-            </thead>
-            <tbody>
-              {{#each this.model.gameWeeks as |gameWeek|}}
-                <tr>
-                  <td class="border border-gray-300 px-2">{{gameWeek.id}}</td>
-                  <td class="border border-gray-300 px-2">{{gameWeek.name}}</td>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{gameWeek.deadline_time}}</td>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{gameWeek.finished}}</td>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{gameWeek.is_current}}</td>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{gameWeek.is_next}}</td>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{gameWeek.is_previous}}</td>
-                </tr>
-              {{/each}}
-            </tbody>
-          </table>
-        </div>
-      </li>
-      {{! Positions }}
-      <li>
-        <button type="button" {{on "click" (fn this.toggle "showPositions")}}>
-          Positions:
-          {{this.model.positions.length}}
-        </button>
-        <div class="{{if this.showPositions 'block' 'hidden'}}">
-          <table class="mt-2">
-            <tbody>
-              {{#each this.model.positions as |position|}}
-                <tr>
-                  <td class="border border-gray-300 px-2">{{position.id}}</td>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{position.singular_name_short}}</td>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{position.singular_name}}</td>
-                </tr>
-              {{/each}}
-            </tbody>
-          </table>
-        </div>
-      </li>
-      {{! Pro Teams }}
-      <li>
-        <button type="button" {{on "click" (fn this.toggle "showProTeams")}}>
-          Pro Teams:
-          {{this.model.proTeams.length}}
-        </button>
-        <div class="{{if this.showProTeams 'block' 'hidden'}}">
-          <table class="mt-2">
-            <thead>
-              <tr>
-                <th class="border border-gray-300 px-2 bold">ID</th>
-                <th class="border border-gray-300 px-2 bold">Short</th>
-                <th class="border border-gray-300 px-2 bold">Name</th>
-                <th class="border border-gray-300 px-2 bold">Code</th>
-              </tr>
-            </thead>
-            <tbody>
-              {{#each this.model.proTeams as |proTeam|}}
+      </ul>
+    </div>
 
-                <tr>
-                  <td class="border border-gray-300 px-2">{{proTeam.id}}</td>
-                  <td class="border border-gray-300 px-2">{{proTeam.name}}</td>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{proTeam.short_name}}</td>
-                  <td class="border border-gray-300 px-2">{{proTeam.code}}</td>
-                </tr>
+    <div class="space-y-6">
 
-              {{/each}}
-            </tbody>
-          </table>
-        </div>
-      </li>
-      {{! Pro Players }}
-      <li>
-        <button type="button" {{on "click" (fn this.toggle "showProPlayers")}}>
-          Pro Players:
-          {{this.model.proPlayers.length}}
-        </button>
-        <div class="{{if this.showProPlayers 'block' 'hidden'}}">
-          <table class="mt-2">
-            <thead>
-              <tr>
+      <table
+        class="w-full border-t-4 border-yellow bg-purple text-white divide-y divide-white divide-opacity-20"
+      >
+        <thead class="">
+          <tr>
+            <th
+              scope="col"
+              class="hidden sm:block py-5 pl-4 pr-3 text-left text-sm font-semibold sm:pl-6 lg:pl-8 text-opacity-70"
+            >Rank</th>
+            <th
+              scope="col"
+              class="px-3 py-5 text-left text-sm font-semibold text-opacity-70"
+            >Team</th>
+            <th
+              scope="col"
+              class="hidden sm:block px-3 py-5 text-left text-sm font-semibold text-opacity-70"
+            >+/-</th>
+            <th
+              scope="col"
+              class="px-3 py-5 text-left text-sm font-semibold text-opacity-70"
+            >Points</th>
+            <th
+              scope="col"
+              class="px-3 py-5 text-sm font-semibold text-right text-opacity-70"
+            >Week</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-white divide-opacity-20">
+          {{#each this.model.fantasyStandings as |standing|}}
 
-                <th class="border border-gray-300 px-2 bold">ID</th>
-                <th class="border border-gray-300 px-2 bold">Code</th>
-                <th class="border border-gray-300 px-2 bold">Pos</th>
-                <th class="border border-gray-300 px-2 bold">Name</th>
-                <th class="border border-gray-300 px-2 bold">Web Name</th>
-                <th class="border border-gray-300 px-2 bold">Team</th>
-                <th class="border border-gray-300 px-2 bold">Points</th>
-                <th class="border border-gray-300 px-2 bold">Price</th>
+            <tr>
+              <td
+                class="hidden sm:block whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium sm:pl-6 lg:pl-8"
+              >{{standing.last_rank}}</td>
+              <td class="whitespace-nowrap px-3 py-4 text-sm">
+                <h1
+                  class="font-bold text-lg md:text-2xl"
+                >{{standing.team.entry_name}}</h1>
+                <h2
+                  class="text-base md:text-xl opacity-70"
+                >{{standing.team.player_first_name}}
+                  {{standing.team.player_last_name}}</h2>
+              </td>
+              <td
+                class="whitespace-nowrap px-3 py-4 text-sm"
+              >{{standing.points_for}}</td>
+              <td
+                class="hidden sm:block whitespace-nowrap px-3 py-4 text-sm"
+              >{{standing.total}}</td>
+              <td
+                class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 lg:pr-8"
+              >+3</td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
 
-              </tr>
-            </thead>
-            <tbody>
-              {{#each this.model.proPlayers as |proPlayer|}}
+      <div
+        class="border-t-4 border-red bg-purple text-white grid grid-cols-4 p-6 items-center divide-y divide-white divide-opacity-20"
+      >
+        {{#each this.model.proFixtures as |game|}}
 
-                <tr>
-                  <td class="border border-gray-300 px-2">{{proPlayer.id}}</td>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{proPlayer.code}}</td>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{proPlayer.position.singular_name_short}}</td>
+          <div class="py-2 opacity-70">{{moment-format
+              game.kickoff_time
+              "ddd Do"
+            }}</div>
+          <div
+            class="py-2 text-left font-bold text-lg md:text-2xl"
+          >{{game.home.short_name}}</div>
+          <div class="py-2 text-center text-3xl font-bold">
+            {{game.score}}
+          </div>
+          <div
+            class="py-2 text-right font-bold text-lg md:text-2xl"
+          >{{game.away.short_name}}</div>
 
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{proPlayer.first_name}} {{proPlayer.second_name}}</td>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{proPlayer.web_name}}</td>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{proPlayer.team.name}}</td>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{proPlayer.total_points}}</td>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{proPlayer.now_cost}}</td>
+        {{/each}}
+      </div>
 
-                </tr>
+    </div>
+  </main>
 
-                {{#if proPlayer.appearances}}
-                  {{#each proPlayer.appearances as |appearance|}}
-                    <tr class="bg-gray-50">
-                      <td
-                        class="border border-gray-300 px-2"
-                      >{{appearance.total_points}}pts</td>
-                      <td
-                        colspan="7"
-                        class="border border-gray-300 px-2 text-xs"
-                      >
-                        {{#each appearance.explain as |e|}}
-                          {{e.value}}
-                          {{e.name}},
-                        {{/each}}
-                      </td>
-                    </tr>
-                  {{/each}}
-                {{/if}}
-
-              {{/each}}
-            </tbody>
-          </table>
-        </div>
-      </li>
-      {{! Pro Fixtures }}
-      <li>
-        <button type="button" {{on "click" (fn this.toggle "showProFixtures")}}>
-          Pro Fixtures:
-          {{this.model.proFixtures.length}}
-        </button>
-        <div class="{{if this.showProFixtures 'block' 'hidden'}}">
-
-          <table class="mt-2">
-            <thead>
-              <tr>
-
-                <th class="border border-gray-300 px-2 bold">ID</th>
-                <th class="border border-gray-300 px-2 bold">Kickoff</th>
-                <th class="border border-gray-300 px-2 bold">Home</th>
-                <th class="border border-gray-300 px-2 bold"></th>
-                <th class="border border-gray-300 px-2 bold"></th>
-                <th class="border border-gray-300 px-2 bold">Away</th>
-                <th class="border border-gray-300 px-2 bold">Provisional</th>
-                <th class="border border-gray-300 px-2 bold">Finished</th>
-
-              </tr>
-            </thead>
-            <tbody>
-              {{#each this.model.proFixtures as |proFixture|}}
-
-                <tr>
-                  <td class="border border-gray-300 px-2">{{proFixture.id}}</td>
-
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{proFixture.kickoff_time}}</td>
-
-                  <td
-                    class="border border-gray-300 px-2 text-right"
-                  >{{proFixture.home.name}}</td>
-
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{proFixture.team_h_score}}</td>
-
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{proFixture.team_a_score}}</td>
-
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{proFixture.away.name}}</td>
-
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{proFixture.finished_provisional}}</td>
-
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{proFixture.finished}}</td>
-
-                </tr>
-              {{/each}}
-            </tbody>
-          </table>
-        </div>
-      </li>
-      {{! Fantasy Fixtures }}
-      <li>
-        <button
-          type="button"
-          {{on "click" (fn this.toggle "showFantasyFixtures")}}
-        >
-          Fixtures:
-          {{this.model.fantasyFixtures.length}}
-        </button>
-        <div class="{{if this.showFantasyFixtures 'block' 'hidden'}}">
-          <table class="mt-2">
-            <thead>
-              <tr>
-                <th class="border border-gray-300 px-2 bold">Game Week</th>
-                <th class="border border-gray-300 px-2 bold">Home</th>
-                <th class="border border-gray-300 px-2 bold"></th>
-                <th class="border border-gray-300 px-2 bold"></th>
-                <th class="border border-gray-300 px-2 bold">Away</th>
-                <th class="border border-gray-300 px-2 bold">Started</th>
-                <th class="border border-gray-300 px-2 bold">Finished</th>
-              </tr>
-            </thead>
-            <tbody>
-              {{#each this.model.fantasyFixtures as |fixture|}}
-                <tr>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{fixture.gameWeek.name}}</td>
-                  <td
-                    class="border border-gray-300 px-2 text-right"
-                  >{{fixture.home.entry_name}}</td>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{fixture.homeScore}}</td>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{fixture.awayScore}}</td>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{fixture.away.entry_name}}</td>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{fixture.started}}</td>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{fixture.finished}}</td>
-                </tr>
-              {{/each}}
-            </tbody>
-          </table>
-        </div>
-      </li>
-      {{! Fantasy League }}
-      <li>
-        <button
-          type="button"
-          {{on "click" (fn this.toggle "showFantasyLeague")}}
-        >
-          League:
-          {{this.model.fantasyStandings.length}}
-        </button>
-        <div class="{{if this.showFantasyLeague 'block' 'hidden'}}">
-          <table class="mt-2">
-            <thead>
-              <tr>
-                <th class="border border-gray-300 px-2 bold">Rank</th>
-                <th class="border border-gray-300 px-2 bold">Team</th>
-                <th class="border border-gray-300 px-2 bold">P</th>
-                <th class="border border-gray-300 px-2 bold">W</th>
-                <th class="border border-gray-300 px-2 bold">D</th>
-                <th class="border border-gray-300 px-2 bold">L</th>
-                <th class="border border-gray-300 px-2 bold">Points</th>
-                <th class="border border-gray-300 px-2 bold">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {{#each this.model.fantasyStandings as |standing|}}
-                <tr>
-                  <td class="border border-gray-300 px-2">{{standing.rank}}</td>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{standing.team.entry_name}}</td>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{standing.played}}</td>
-                  <td class="border border-gray-300 px-2">{{standing.won}}</td>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{standing.drawn}}</td>
-                  <td class="border border-gray-300 px-2">{{standing.lost}}</td>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{standing.points_for}}</td>
-                  <td
-                    class="border border-gray-300 px-2"
-                  >{{standing.total}}</td>
-                </tr>
-
-                {{#each standing.team.picks as |pick|}}
-
-                  {{#each pick.player.appearances as |appearance|}}
-                    <tr class="text-sm">
-                      <td
-                        class="border border-gray-300 px-2"
-                      >{{pick.position}}</td>
-                      <td
-                        class="border border-gray-300 px-2"
-                      >{{pick.player.web_name}}</td>
-
-                      <td
-                        colspan="6"
-                        class="border border-gray-300 px-2"
-                      >{{appearance.total_points}}pts</td>
-                    </tr>
-                  {{/each}}
-
-                {{/each}}
-
-              {{/each}}
-            </tbody>
-          </table>
-
-        </div>
-      </li>
-
-    </ul>
-  {{/if}}
 </div>
---}}

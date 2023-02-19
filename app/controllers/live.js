@@ -42,7 +42,7 @@ export default class LiveController extends Controller {
   //     return;
   //   }
   //   const matches = this.model.league.value.matches,
-  //     event = this.currentGameWeek;
+  //     event = this.currentGameWeek.id;
 
   //   return matches.filter((m) => m.event === event);
   // }

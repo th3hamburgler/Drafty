@@ -10,10 +10,11 @@ const DRAFT_API = 'https://draft.premierleague.com/api',
   LEAGUE_DETAILS_API = `${DRAFT_API}/league/46575/details`,
   GAME_API = `${DRAFT_API}/game`,
   LEAGUE_ELEMENTS = `${DRAFT_API}/league/46575/element-status`,
-  EVENTS_LIVE = `${DRAFT_API}/event/23/live`,
+  EVENTS_LIVE = `${DRAFT_API}/event/:game_week_id/live`,
   BOOTSTRAP_STATIC = `${FPL_API}/bootstrap-static/`,
   FIXTURES = `${FPL_API}/fixtures`,
-  PICKS = `${DRAFT_API}/entry/:manager_id/event/:event_id`;
+  PICKS = `${DRAFT_API}/entry/:manager_id/event/:event_id`,
+  TRANSACTIONS = `${DRAFT_API}/draft/league/46575/transactions`;
 
 export default class FplApiService extends Service {
   // Services
@@ -24,6 +25,7 @@ export default class FplApiService extends Service {
 
   @tracked gameWeeks = [];
   @tracked positions = [];
+  @tracked transactions = [];
 
   @tracked proTeams = [];
   @tracked proPlayers = [];
@@ -44,7 +46,8 @@ export default class FplApiService extends Service {
       this.getBootstrap.isRunning &&
       this.getLiveMatches.isRunning &&
       this.getLeagueData.isRunning &&
-      this.getTeamData.isRunning
+      this.getTeamData.isRunning &&
+      this.getTransactions.isRunning
     );
   }
 
@@ -57,9 +60,9 @@ export default class FplApiService extends Service {
     });
 
     if (gameWeek) {
-      return gameWeek.id;
+      return gameWeek;
     }
-    return 1;
+    return { id: 1 };
   }
 
   get currentFantasyFixtures() {
@@ -69,7 +72,7 @@ export default class FplApiService extends Service {
     const currentGameWeek = this.currentGameWeek;
 
     return this.fantasyFixtures.filter((f) => {
-      return f.gameWeek.get('id') === currentGameWeek;
+      return f.gameWeek.get('id') === currentGameWeek.id;
     });
   }
 
@@ -94,6 +97,18 @@ export default class FplApiService extends Service {
     return this.fantasyStandings.toArray().sortBy('pointsPerScore').lastObject;
   }
 
+  get tinkerMan() {
+    // Sort with highest number of transactions
+    return this.fantasyStandings.toArray().sortBy('team.totalTransactions')
+      .lastObject;
+  }
+
+  get asleep() {
+    // Sort with lowest number of transactions
+    return this.fantasyStandings.toArray().sortBy('team.totalTransactions')
+      .firstObject;
+  }
+
   // Tasks
 
   @task(function* (/*params*/) {
@@ -114,7 +129,9 @@ export default class FplApiService extends Service {
 
   @task(function* (/*params*/) {
     try {
-      const result = yield axios.get(EVENTS_LIVE);
+      const result = yield axios.get(
+        EVENTS_LIVE.replace(':game_week_id', this.currentGameWeek.id)
+      );
 
       this.proFixtures = yield this.normalizeFixtures(
         result.data,
@@ -168,6 +185,19 @@ export default class FplApiService extends Service {
   })
   getTeamData;
 
+  @task(function* (/*params*/) {
+    try {
+      const result = yield axios.get(TRANSACTIONS);
+
+      this.transactions = this.normalizeTransactions(result.data.transactions);
+
+      return true;
+    } catch (e) {
+      console.log(e);
+    }
+  })
+  getTransactions;
+
   // Methods
 
   async bootstrap() {
@@ -179,10 +209,12 @@ export default class FplApiService extends Service {
     // get picks
     const teams = [];
     this.fantasyTeams.map((team) => {
-      this.getTeamData.perform(team, 23);
+      this.getTeamData.perform(team, this.currentGameWeek.id);
     });
 
     await all(teams);
+
+    await this.getTransactions.perform();
 
     return this;
   }
@@ -459,6 +491,9 @@ export default class FplApiService extends Service {
       delete pick.element;
 
       const player = this.store.peekRecord('pro-player', proPlayerId);
+      const appearance = this.store.peekAll('appearance').find((app) => {
+        return parseInt(app.get('player.id')) === proPlayerId;
+      });
 
       const model = this.store.push({
         data: [
@@ -472,6 +507,49 @@ export default class FplApiService extends Service {
       }).firstObject;
 
       model.player = player;
+      model.team = fantasyTeam;
+      model.gameWeek = gameWeek;
+      model.appearance = appearance;
+
+      return model;
+    });
+  }
+
+  normalizeTransactions(transactions) {
+    console.log('normalizeTransactions');
+    return transactions.map((transaction) => {
+      const id = transaction.id,
+        proPlayerInId = transaction.element_in,
+        proPlayerOutId = transaction.element_out,
+        gameWeekId = transaction.event,
+        fantasyTeamAdminEntry = transaction.entry;
+
+      delete transaction.element;
+      delete transaction.element_in;
+      delete transaction.element_out;
+      delete transaction.event;
+      delete transaction.entry;
+
+      const playerIn = this.store.peekRecord('pro-player', proPlayerInId);
+      const playerOut = this.store.peekRecord('pro-player', proPlayerOutId);
+      const fantasyTeam = this.store.peekAll('fantasy-team').find((team) => {
+        return team.entry_id === fantasyTeamAdminEntry;
+      });
+      const gameWeek = this.store.peekRecord('game-week', gameWeekId);
+
+      const model = this.store.push({
+        data: [
+          {
+            id: id,
+            type: 'transaction',
+            attributes: transaction,
+            relationships: {},
+          },
+        ],
+      }).firstObject;
+
+      model.playerIn = playerIn;
+      model.playerOut = playerOut;
       model.team = fantasyTeam;
       model.gameWeek = gameWeek;
 

@@ -5,10 +5,11 @@ export default class FantasyPickModel extends Model {
 
   @attr('boolean') is_captain;
   @attr('boolean') is_vice_captain;
-  @attr('number') multiplier;
+  @attr('number') multiplier; // 1 in team / 0 on bench
   @attr('number') position;
 
   @belongsTo('pro-player') player;
   @belongsTo('fantasy-team') team;
   @belongsTo('game-week') gameWeek;
+  @belongsTo('appearance') appearance;
 }

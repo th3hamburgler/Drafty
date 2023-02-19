@@ -44,15 +44,21 @@ export default class IndexController extends Controller {
       {
         title: 'Asleep at the wheel',
         icon: 'steering-wheel',
-        manager: 'Matt Henley',
-        value: '2 transfers',
+        manager: this.model.asleep.get('team.fullName'),
+        value: pluralize(
+          this.model.asleep.get('team.totalTransactions'),
+          'transfer'
+        ),
         color: 'yellow',
       },
       {
         title: 'The Tinker Man',
         icon: 'beaker',
-        manager: 'Matt Gibson',
-        value: '78 free agent transfers',
+        manager: this.model.tinkerMan.get('team.fullName'),
+        value: pluralize(
+          this.model.tinkerMan.get('team.totalTransactions'),
+          'transfer'
+        ),
         color: 'cyan',
       },
       {

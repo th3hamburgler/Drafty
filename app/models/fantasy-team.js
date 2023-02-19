@@ -17,10 +17,19 @@ export default class FantasyTeamModel extends Model {
   @hasMany('fantasy-fixture', { inverse: 'home' }) homeFixtures;
   @hasMany('fantasy-fixture', { inverse: 'away' }) awayFixtures;
   @hasMany('fantasy-pick') picks;
+  @hasMany('transactions') transactions;
 
   // Getters
 
   get fullName() {
     return `${this.player_first_name} ${this.player_last_name}`;
+  }
+
+  get totalTransactions() {
+    return this.transactions.filterBy('result', 'a').length;
+  }
+
+  get totalTrades() {
+    return this.transactions.filterBy().filterBy('kind', 'di').length;
   }
 }

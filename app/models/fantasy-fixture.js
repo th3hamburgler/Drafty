@@ -32,4 +32,17 @@ export default class FantasyFixtureModel extends Model {
   get awayWin() {
     return this.league_entry_2_points > this.league_entry_1_points;
   }
+
+  get statusColor() {
+    // pending
+    if (!this.started) {
+      return 'bg-yellow';
+    } else if (!this.finished) {
+      // in progress
+      return 'bg-lime';
+    } else {
+      // complete
+      return 'bg-cyan';
+    }
+  }
 }

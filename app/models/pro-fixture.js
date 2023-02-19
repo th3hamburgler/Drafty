@@ -20,4 +20,14 @@ export default class ProFixtureModel extends Model {
 
   @belongsTo('pro_team') home;
   @belongsTo('pro_team') away;
+
+  // Getters
+
+  get score() {
+    if (this.started) {
+      return `${this.team_h_score} v ${this.team_a_score}`;
+    } else {
+      return `- v -`;
+    }
+  }
 }

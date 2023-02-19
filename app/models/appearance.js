@@ -28,6 +28,7 @@ export default class AppearanceModel extends Model {
   // Relationship
 
   @belongsTo('pro-player') player;
+  @belongsTo('fantasy-pick') pick;
 
   // Getters
   get pointsDescriptions() {
@@ -58,6 +59,14 @@ export default class AppearanceModel extends Model {
       return ['Did not play'];
     } else {
       return str;
+    }
+  }
+
+  get appearanceColor() {
+    if (this.minutes > 0) {
+      return 'bg-lime';
+    } else {
+      return 'bg-yellow';
     }
   }
 }
