@@ -1,0 +1,29 @@
+<div
+  class="relative flex flex-col items-center gap-2 text-white bg-purple rounded-sm p-6"
+>
+  <h1 class="text-center text-lg font-bold uppercase px-6">{{@title}}</h1>
+
+  <div class="flex-1"></div>
+
+  <div class="lg:py-6 xl:py-12">
+    {{svg-jar
+      @icon
+      class=(concat "h-16 w-16 lg:h-20 lg:w-20 xl:h-24 xl:w-24 text-" @color)
+    }}
+  </div>
+
+  <h2 class="text-xl font-bold">{{@manager}}</h2>
+
+  <h3 class="text-{{@color}} text-sm">{{@value}}</h3>
+
+  {{svg-jar
+    "outline.information-circle"
+    class="w-6 h-6 absolute top-6 right-6 opacity-50"
+  }}
+</div>
+{{! 
+text-cyan
+text-red
+text-lime
+text-yellow 
+}}
