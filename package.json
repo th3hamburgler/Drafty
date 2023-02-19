@@ -1,11 +1,11 @@
 {
   "name": "drafty",
-  "version": "0.0.0",
-  "private": true,
-  "description": "Small description for drafty goes here",
-  "repository": "",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Dashboards for Fantasy Premier Draft League",
+  "repository": "git@github.com:th3hamburgler/Drafty.git",
   "license": "MIT",
-  "author": "",
+  "author": "Jim Wardlaw",
   "directories": {
     "doc": "doc",
     "test": "tests"
