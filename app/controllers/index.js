@@ -1,8 +1,16 @@
 import Controller from '@ember/controller';
 import { pluralize } from 'ember-inflector';
-
+import { inject as service } from '@ember/service';
 export default class IndexController extends Controller {
+  // Services
+
+  @service('fpl-api') fplApi;
+
   // Getters
+
+  get loading() {
+    return this.model.loading;
+  }
 
   get awards() {
     if (this.model.loading) {

@@ -1,21 +1,37 @@
 {{page-title "Dashboard"}}
 
-<div class="min-h-screen w-full bg-black">
+<div class="min-h-screen flex flex-col w-full bg-black">
 
   <Nav />
 
-  <main class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 m-6 gap-6">
+  <Header
+    @loading={{this.loading}}
+    @title="Awards"
+    @text="Current award winners and stats for the season"
+  />
 
-    {{#each this.awards as |award|}}
-      <Card::Award
-        @title={{award.title}}
-        @icon={{award.icon}}
-        @manager={{award.manager}}
-        @value={{award.value}}
-        @color={{award.color}}
-      />
-    {{/each}}
+  {{#if this.loading}}
 
-  </main>
+    <div class="flex flex-1 justify-center items-center p-6">
 
+      {{svg-jar "loading-ball" class="loader w-36 h-36 text-yellow"}}
+
+    </div>
+
+  {{else}}
+
+    <main class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 m-6 gap-6">
+
+      {{#each this.awards as |award|}}
+        <Card::Award
+          @title={{award.title}}
+          @icon={{award.icon}}
+          @manager={{award.manager}}
+          @value={{award.value}}
+          @color={{award.color}}
+        />
+      {{/each}}
+
+    </main>
+  {{/if}}
 </div>
