@@ -38,8 +38,12 @@ export default class FantasyTeamModel extends Model {
 
     this.picks.forEach((p) => {
       if (p.multiplier === 0) {
-        // console.log(p.get('appearance.total_points'));
-        points += p.get('appearance.total_points');
+        const totalPoints = parseInt(p.get('appearance.total_points'));
+        if (!isNaN(totalPoints)) {
+          points += totalPoints;
+        } else {
+          // console.log('whut?', totalPoints);
+        }
         // console.log('benched', p.get('player.web_name'), p.multiplier);
       }
     });

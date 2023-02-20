@@ -44,6 +44,8 @@ export default class FplApiService extends Service {
   @tracked fantasyLeague = null;
   @tracked fantasyPicks = [];
 
+  @tracked pickId = 0;
+
   // Getters
 
   get loading() {
@@ -135,17 +137,17 @@ export default class FplApiService extends Service {
   }
 
   get benchWarmer() {
-    console.table(
-      this.fantasyTeams
-        .toArray()
-        .sortBy('totalLostBenchPoints')
-        .map((team) => {
-          return {
-            team: team.entry_name,
-            pointsBenched: team.totalLostBenchPoints,
-          };
-        })
-    );
+    // console.table(
+    //   this.fantasyTeams
+    //     .toArray()
+    //     .sortBy('totalLostBenchPoints')
+    //     .map((team) => {
+    //       return {
+    //         team: team.entry_name,
+    //         pointsBenched: team.totalLostBenchPoints,
+    //       };
+    //     })
+    // );
 
     return this.fantasyTeams.toArray().sortBy('totalLostBenchPoints')
       .lastObject;
@@ -215,11 +217,11 @@ export default class FplApiService extends Service {
       );
 
       const gameWeek = this.store.peekRecord('game-week', gameWeekId);
-
-      this.fantasyPicks.addObjects(
-        this.normalizePicks(result.data, team, gameWeek)
-      );
-
+      const picks = yield this.normalizePicks(result.data, team, gameWeek);
+      if (picks.length !== 15) {
+        console.log('PICKS', picks.length);
+      }
+      this.fantasyPicks.addObjects(picks);
       return true;
     } catch (e) {
       console.log(e);
@@ -250,8 +252,18 @@ export default class FplApiService extends Service {
 
     // get picks
     const teams = [];
-    this.fantasyTeams.map((team) => {
-      this.getTeamData.perform(team, this.currentGameWeek.id);
+
+    this.fantasyTeams.map(async (team) => {
+      // console.log('game weeks', this.gameWeeks.length);
+      this.gameWeeks.map(async (week) => {
+        // console.log(week.id, this.currentGameWeek.id);
+        if (parseInt(week.id) <= parseInt(this.currentGameWeek.id)) {
+          // console.log('do', team.entry_name, week.name);
+          await this.getTeamData.perform(team, week.id);
+        } else {
+          // console.log('skip', team.entry_name, week.name);
+        }
+      });
     });
 
     await all(teams);
@@ -524,10 +536,11 @@ export default class FplApiService extends Service {
   }
 
   normalizePicks(payload, fantasyTeam, gameWeek) {
-    console.log('normalizePicks');
+    console.log('normalizePicks' /*, fantasyTeam.entry_name, gameWeek.name*/);
 
     const picks = payload.picks.map((pick, index) => {
-      const id = pick.element,
+      this.pickId++;
+      const id = this.pickId,
         proPlayerId = pick.element;
 
       delete pick.element;
@@ -537,6 +550,10 @@ export default class FplApiService extends Service {
       const appearance = this.store.peekAll('appearance').find((app) => {
         return parseInt(app.get('player.id')) === proPlayerId;
       });
+
+      if (!appearance) {
+        console.log('appearance not found', gameWeek.name);
+      }
 
       // assign a 0 multiplier to any subs when the game week began
       // it looks like the draft api always assigns 1 to this property
