@@ -17,6 +17,9 @@ export default class IndexController extends Controller {
       return [];
     }
 
+    const flatTrackBully = this.model.flatTrackBully,
+      benchWarmer = this.model.benchWarmer;
+
     return [
       {
         title: 'Leader',
@@ -33,6 +36,7 @@ export default class IndexController extends Controller {
         color: 'red',
       },
       {
+        // TODO - One man team
         title: 'Del Boy',
         icon: 'currency-pound',
         manager: 'Tom O`Brien',
@@ -42,11 +46,11 @@ export default class IndexController extends Controller {
       {
         title: 'Flat-track Bully',
         icon: 'black-eye',
-        manager: this.model.flatTrackBully.get('team.fullName'),
+        manager: flatTrackBully.get('team.fullName'),
         value: `${pluralize(
-          this.model.flatTrackBully.pointsPerScore,
-          'point'
-        )} per score`,
+          flatTrackBully.get('pointsDifference'),
+          'pt'
+        )} difference`,
         color: 'yellow',
       },
       {
@@ -70,19 +74,32 @@ export default class IndexController extends Controller {
         color: 'cyan',
       },
       {
+        // todo
         title: 'Bench Warmer',
         icon: 'bench',
-        manager: 'Mike Ewen',
-        value: '78pts left on the bench',
+        manager: benchWarmer.get('fullName'),
+        value: `${pluralize(
+          benchWarmer.get('totalLostBenchPoints'),
+          'pt'
+        )} left on the bench`,
         color: 'red',
       },
       {
+        // todo
         title: 'Lost the Changing Room',
         icon: 'boxing',
         manager: 'Steve Borrington',
-        value: '32 negative points',
+        value: '32 negative player pts',
         color: 'lime',
       },
+
+      // best defence (most points)
+
+      // worst forward line
+
+      // waste of a good keeper
+
+      // saved by the subs
     ];
   }
 }

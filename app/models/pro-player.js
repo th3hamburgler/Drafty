@@ -3,7 +3,7 @@ import Model, { attr, belongsTo, hasMany } from '@ember-data/model';
 export default class ProPlayerModel extends Model {
   // Attributes
 
-  @attr('string') code;
+  @attr('number') code;
   @attr('string') first_name;
   @attr('string') second_name;
   @attr('string') web_name;

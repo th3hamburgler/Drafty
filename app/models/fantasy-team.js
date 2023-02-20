@@ -32,4 +32,20 @@ export default class FantasyTeamModel extends Model {
   get totalTrades() {
     return this.transactions.filterBy().filterBy('kind', 'di').length;
   }
+
+  get totalLostBenchPoints() {
+    let points = 0;
+
+    this.picks.forEach((p) => {
+      if (p.multiplier === 0) {
+        // console.log(p.get('appearance.total_points'));
+        points += p.get('appearance.total_points');
+        // console.log('benched', p.get('player.web_name'), p.multiplier);
+      }
+    });
+
+    // console.log('totalLostBenchPoints', this.entry_name, this.points);
+
+    return points;
+  }
 }

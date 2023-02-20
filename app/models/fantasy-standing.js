@@ -36,8 +36,7 @@ export default class FantasyStandingModel extends Model {
     return this.matches_lost;
   }
 
-  get pointsPerScore() {
-    // console.log(this.points_for, this.total);
-    return this.points_for;
+  get pointsDifference() {
+    return parseInt(this.points_for - this.points_against);
   }
 }

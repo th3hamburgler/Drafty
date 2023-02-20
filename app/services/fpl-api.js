@@ -99,8 +99,27 @@ export default class FplApiService extends Service {
   }
 
   get flatTrackBully() {
+    const standings = this.fantasyStandings.toArray().map((s) => {
+      return s;
+    });
+
     // Sort with highest points p score
-    return this.fantasyStandings.toArray().sortBy('pointsPerScore').lastObject;
+
+    const sorted = standings.sort((a, b) => {
+      if (a.pointsDifference < b.pointsDifference) {
+        return 1;
+      } else if (a.pointsDifference > b.pointsDifference) {
+        return -1;
+      } else if (a.pointsDifference < b.pointsDifference) {
+        return 1;
+      } else if (a.pointsDifference > b.pointsDifference) {
+        return -1;
+      } else {
+        return 0;
+      }
+    });
+
+    return sorted.firstObject;
   }
 
   get tinkerMan() {
@@ -113,6 +132,23 @@ export default class FplApiService extends Service {
     // Sort with lowest number of transactions
     return this.fantasyStandings.toArray().sortBy('team.totalTransactions')
       .firstObject;
+  }
+
+  get benchWarmer() {
+    console.table(
+      this.fantasyTeams
+        .toArray()
+        .sortBy('totalLostBenchPoints')
+        .map((team) => {
+          return {
+            team: team.entry_name,
+            pointsBenched: team.totalLostBenchPoints,
+          };
+        })
+    );
+
+    return this.fantasyTeams.toArray().sortBy('totalLostBenchPoints')
+      .lastObject;
   }
 
   // Tasks
@@ -490,16 +526,23 @@ export default class FplApiService extends Service {
   normalizePicks(payload, fantasyTeam, gameWeek) {
     console.log('normalizePicks');
 
-    return payload.picks.map((pick) => {
+    const picks = payload.picks.map((pick, index) => {
       const id = pick.element,
         proPlayerId = pick.element;
 
       delete pick.element;
 
       const player = this.store.peekRecord('pro-player', proPlayerId);
+
       const appearance = this.store.peekAll('appearance').find((app) => {
         return parseInt(app.get('player.id')) === proPlayerId;
       });
+
+      // assign a 0 multiplier to any subs when the game week began
+      // it looks like the draft api always assigns 1 to this property
+      if (index > 10) {
+        pick.multiplier = 0;
+      }
 
       const model = this.store.push({
         data: [
@@ -519,6 +562,30 @@ export default class FplApiService extends Service {
 
       return model;
     });
+
+    // Now we must loop through the subs data to see if any players
+    // were subbed into the team this week
+    payload.subs.forEach((s) => {
+      const playerIn = picks.find((p) => {
+        // console.log(p.get('player.id'), s.element_in);
+        return parseInt(p.get('player.id')) === parseInt(s.element_in);
+      });
+      const playerOut = picks.find((p) => {
+        // console.log(p.get('player.id'), s.element_out);
+        return parseInt(p.get('player.id')) === parseInt(s.element_out);
+      });
+
+      // set player in multiplier to 1
+      if (playerIn) {
+        playerIn.multiplier = 1;
+      }
+      // set player out multipler to 0
+      if (playerOut) {
+        playerOut.multiplier = 0;
+      }
+    });
+
+    return picks;
   }
 
   normalizeTransactions(transactions) {
