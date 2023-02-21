@@ -45,14 +45,23 @@ export default class FplApiService extends Service {
   @tracked fantasyPicks = [];
 
   @tracked pickId = 0;
+  @tracked appearanceId = 0;
 
   // Getters
 
   get loading() {
+    // console.table(
+    //   this.fantasyTeams.map((t) => {
+    //     return {
+    //       name: t.entry_name,
+    //       pts: t.totalLostBenchPoints,
+    //     };
+    //   })
+    // );
     // return true;
     return (
       this.getBootstrap.isRunning &&
-      this.getLiveMatches.isRunning &&
+      this.getMatches.isRunning &&
       this.getLeagueData.isRunning &&
       this.getTeamData.isRunning &&
       this.getTransactions.isRunning
@@ -171,10 +180,10 @@ export default class FplApiService extends Service {
   })
   getBootstrap;
 
-  @task(function* (/*params*/) {
+  @task(function* (gameWeekId) {
     try {
       const result = yield axios.get(
-        EVENTS_LIVE.replace(':game_week_id', this.currentGameWeek.id)
+        EVENTS_LIVE.replace(':game_week_id', gameWeekId)
       );
 
       this.proFixtures = yield this.normalizeFixtures(
@@ -187,7 +196,7 @@ export default class FplApiService extends Service {
       console.log(e);
     }
   })
-  getLiveMatches;
+  getMatches;
 
   @task(function* (/*params*/) {
     try {
@@ -218,10 +227,15 @@ export default class FplApiService extends Service {
 
       const gameWeek = this.store.peekRecord('game-week', gameWeekId);
       const picks = yield this.normalizePicks(result.data, team, gameWeek);
-      if (picks.length !== 15) {
-        console.log('PICKS', picks.length);
-      }
       this.fantasyPicks.addObjects(picks);
+
+      const appearance = yield axios.get(
+        PICKS.replace(':manager_id', team.entry_id).replace(
+          ':event_id',
+          gameWeekId
+        )
+      );
+
       return true;
     } catch (e) {
       console.log(e);
@@ -247,23 +261,23 @@ export default class FplApiService extends Service {
   async bootstrap() {
     console.log('bootstrap');
     await this.getBootstrap.perform();
-    await this.getLiveMatches.perform();
+    await this.getMatches.perform(this.currentGameWeek.id);
     await this.getLeagueData.perform();
 
     // get picks
     const teams = [];
 
-    this.fantasyTeams.map(async (team) => {
-      // console.log('game weeks', this.gameWeeks.length);
-      this.gameWeeks.map(async (week) => {
-        // console.log(week.id, this.currentGameWeek.id);
-        if (parseInt(week.id) <= parseInt(this.currentGameWeek.id)) {
+    this.gameWeeks.map(async (week) => {
+      // console.log(week.id, this.currentGameWeek.id);
+      if (parseInt(week.id) <= parseInt(this.currentGameWeek.id)) {
+        await this.getMatches.perform(week.id);
+
+        this.fantasyTeams.map(async (team) => {
+          // console.log('game weeks', this.gameWeeks.length);
           // console.log('do', team.entry_name, week.name);
           await this.getTeamData.perform(team, week.id);
-        } else {
-          // console.log('skip', team.entry_name, week.name);
-        }
-      });
+        });
+      }
     });
 
     await all(teams);
@@ -396,7 +410,7 @@ export default class FplApiService extends Service {
   }
 
   normalizePoints(payload) {
-    console.log('normalizePoints');
+    // console.log('normalizePoints');
 
     const allAppearances = [];
 
@@ -404,14 +418,17 @@ export default class FplApiService extends Service {
       const appearances = [payload.elements[playerId]];
 
       appearances.forEach((appearance) => {
-        const explain = appearance.explain.firstObject.firstObject;
+        const explain = appearance?.explain?.firstObject?.firstObject;
+
+        this.appearanceId++;
+        const id = this.appearanceId;
 
         const player = this.store.peekRecord('pro-player', playerId);
 
         const model = this.store.push({
           data: [
             {
-              id: playerId,
+              id: id,
               type: 'appearance',
               attributes: { ...appearance.stats, explain: explain },
               relationships: {},
@@ -536,7 +553,7 @@ export default class FplApiService extends Service {
   }
 
   normalizePicks(payload, fantasyTeam, gameWeek) {
-    console.log('normalizePicks' /*, fantasyTeam.entry_name, gameWeek.name*/);
+    // console.log('normalizePicks' /*, fantasyTeam.entry_name, gameWeek.name*/);
 
     const picks = payload.picks.map((pick, index) => {
       this.pickId++;

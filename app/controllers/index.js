@@ -100,6 +100,8 @@ export default class IndexController extends Controller {
       // waste of a good keeper
 
       // saved by the subs
+
+      // good draft - most amount of original squad
     ];
   }
 }

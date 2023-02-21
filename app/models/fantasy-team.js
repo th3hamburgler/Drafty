@@ -48,8 +48,6 @@ export default class FantasyTeamModel extends Model {
       }
     });
 
-    // console.log('totalLostBenchPoints', this.entry_name, this.points);
-
     return points;
   }
 }
