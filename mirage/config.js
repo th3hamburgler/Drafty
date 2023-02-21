@@ -19,7 +19,8 @@ export default function (config) {
 
 function routes() {
   this.namespace = '/api';
-  this.timing = 5;
+  this.timing = 0;
+  this.logging = false;
 
   // DRAFT API
   this.urlPrefix = 'https://draft.premierleague.com';

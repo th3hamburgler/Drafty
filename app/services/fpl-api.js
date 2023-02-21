@@ -1,7 +1,7 @@
 import Service from '@ember/service';
 import { inject as service } from '@ember/service';
 import { tracked } from '@glimmer/tracking';
-import { task, all } from 'ember-concurrency';
+import { task, all, waitForProperty, timeout } from 'ember-concurrency';
 import axios from 'axios';
 import config from 'drafty/config/environment';
 
@@ -49,29 +49,7 @@ export default class FplApiService extends Service {
 
   // Getters
 
-  get loading() {
-    // console.table(
-    //   this.fantasyTeams.map((t) => {
-    //     return {
-    //       name: t.entry_name,
-    //       pts: t.totalLostBenchPoints,
-    //     };
-    //   })
-    // );
-    // return true;
-    return (
-      this.getBootstrap.isRunning &&
-      this.getMatches.isRunning &&
-      this.getLeagueData.isRunning &&
-      this.getTeamData.isRunning &&
-      this.getTransactions.isRunning
-    );
-  }
-
   get currentGameWeek() {
-    if (this.loading) {
-      return;
-    }
     const gameWeek = this.gameWeeks.find((week) => {
       return week.is_current;
     });
@@ -164,44 +142,78 @@ export default class FplApiService extends Service {
 
   // Tasks
 
-  @task(function* (/*params*/) {
-    try {
-      const result = yield axios.get(BOOTSTRAP_STATIC);
+  bootstrap = task(async () => {
+    await this.getBootstrap.perform();
 
+    await waitForProperty(this, 'getBootstrap.isIdle');
+
+    // await this.getMatches.perform(this.currentGameWeek.id);
+
+    await this.getLeagueData.perform();
+
+    // Loop over game weeks and collect pro player appearance data
+    this.gameWeeks.forEach(async (week) => {
+      // Ignore game weeks in the future
+      if (parseInt(week.id) <= parseInt(this.currentGameWeek.id)) {
+        await this.getMatches.perform(week.id);
+      }
+    });
+
+    await waitForProperty(this, 'getMatches.isIdle');
+
+    // Loop over game weeks for each team and collect their fantasy picks
+    this.fantasyTeams.forEach((team) => {
+      this.gameWeeks.forEach(async (week) => {
+        // Ignore game weeks in the future
+        if (parseInt(week.id) <= parseInt(this.currentGameWeek.id)) {
+          await this.getTeamData.perform(team, week.id);
+        }
+      });
+    });
+
+    // Transactions
+    await this.getTransactions.perform();
+
+    return this;
+  });
+
+  getBootstrap = task(async () => {
+    try {
+      // console.log('Task: getBootstrap start');
+      const result = await axios.get(BOOTSTRAP_STATIC);
+      // console.log('Task: getBootstrap resolve');
       this.gameWeeks = this.normalizeGameWeeks(result.data.events);
       this.positions = this.normalizePositions(result.data.element_types);
       this.proTeams = this.normalizeTeams(result.data.teams);
       this.proPlayers = this.normalizeProPlayers(result.data.elements);
-
-      return true;
     } catch (e) {
       console.log(e);
     }
-  })
-  getBootstrap;
+  });
 
-  @task(function* (gameWeekId) {
+  getMatches = task(async (gameWeekId) => {
     try {
-      const result = yield axios.get(
+      // console.log('Task: getMatches start');
+
+      const result = await axios.get(
         EVENTS_LIVE.replace(':game_week_id', gameWeekId)
       );
 
-      this.proFixtures = yield this.normalizeFixtures(
-        result.data,
-        this.proTeams
-      );
-      this.proPoints = yield this.normalizePoints(result.data, this.proPlayers);
-      return true;
+      // console.log('Task: getMatches resolve');
+
+      this.proFixtures = this.normalizeFixtures(result.data, this.proTeams);
+
+      this.proPoints = this.normalizePoints(result.data, this.proPlayers);
     } catch (e) {
       console.log(e);
     }
-  })
-  getMatches;
+  });
 
-  @task(function* (/*params*/) {
+  getLeagueData = task(async () => {
     try {
-      const result = yield axios.get(LEAGUE_DETAILS_API);
-
+      // console.log('Task: getLeagueData start');
+      const result = await axios.get(LEAGUE_DETAILS_API);
+      // console.log('Task: getLeagueData resolve');
       this.fantasyLeague = this.normalizeLeague(result.data.league);
       this.fantasyTeams = this.normalizeFantasyTeams(
         result.data.league_entries
@@ -213,82 +225,55 @@ export default class FplApiService extends Service {
     } catch (e) {
       console.log(e);
     }
-  })
-  getLeagueData;
+  });
 
-  @task(function* (team, gameWeekId) {
+  getTeamData = task(async (team, gameWeekId) => {
     try {
-      const result = yield axios.get(
-        PICKS.replace(':manager_id', team.entry_id).replace(
-          ':event_id',
-          gameWeekId
-        )
+      // console.log('Task: getTeamData start');
+
+      const url = PICKS.replace(':manager_id', team.entry_id).replace(
+        ':event_id',
+        gameWeekId
       );
+
+      const result = await axios.get(url);
+      // console.log('Task: getTeamData resolve');
 
       const gameWeek = this.store.peekRecord('game-week', gameWeekId);
-      const picks = yield this.normalizePicks(result.data, team, gameWeek);
+      const picks = this.normalizePicks(result.data, team, gameWeek);
       this.fantasyPicks.addObjects(picks);
 
-      const appearance = yield axios.get(
-        PICKS.replace(':manager_id', team.entry_id).replace(
-          ':event_id',
-          gameWeekId
-        )
-      );
+      // const appearance = await axios.get(
+      //   PICKS.replace(':manager_id', team.entry_id).replace(
+      //     ':event_id',
+      //     gameWeekId
+      //   )
+      // );
 
       return true;
     } catch (e) {
       console.log(e);
     }
-  })
-  getTeamData;
+  });
 
-  @task(function* (/*params*/) {
+  getTransactions = task(async (team, gameWeekId) => {
     try {
-      const result = yield axios.get(TRANSACTIONS);
+      // console.log('Task: getTransactions start');
 
+      const result = await axios.get(TRANSACTIONS);
+      // console.log('Task: getTransactions resolve');
       this.transactions = this.normalizeTransactions(result.data.transactions);
 
       return true;
     } catch (e) {
       console.log(e);
     }
-  })
-  getTransactions;
+  });
 
   // Methods
 
-  async bootstrap() {
-    console.log('bootstrap');
-    await this.getBootstrap.perform();
-    await this.getMatches.perform(this.currentGameWeek.id);
-    await this.getLeagueData.perform();
-
-    // get picks
-    const teams = [];
-
-    this.gameWeeks.map(async (week) => {
-      // console.log(week.id, this.currentGameWeek.id);
-      if (parseInt(week.id) <= parseInt(this.currentGameWeek.id)) {
-        await this.getMatches.perform(week.id);
-
-        this.fantasyTeams.map(async (team) => {
-          // console.log('game weeks', this.gameWeeks.length);
-          // console.log('do', team.entry_name, week.name);
-          await this.getTeamData.perform(team, week.id);
-        });
-      }
-    });
-
-    await all(teams);
-
-    await this.getTransactions.perform();
-
-    return this;
-  }
-
   normalizeGameWeeks(weeks) {
-    console.log('normalizeGameWeeks');
+    // console.log('normalizeGameWeeks');
     return weeks.map((week) => {
       const id = week.id;
       delete week.id;
@@ -325,7 +310,7 @@ export default class FplApiService extends Service {
   }
 
   normalizeTeams(teams) {
-    console.log('normalizeTeams');
+    // console.log('normalizeTeams');
     return teams.map((team) => {
       const id = team.id;
       delete team.id;
@@ -344,7 +329,7 @@ export default class FplApiService extends Service {
   }
 
   normalizeProPlayers(proPlayers) {
-    console.log('normalizeProPlayers');
+    // console.log('normalizeProPlayers');
 
     return proPlayers.map((p) => {
       const id = p.id,
@@ -378,7 +363,7 @@ export default class FplApiService extends Service {
   }
 
   normalizeFixtures(payload, proTeams) {
-    console.log('normalizeFixtures');
+    // console.log('normalizeFixtures');
     return payload.fixtures.map((fixture) => {
       const id = fixture.id;
       const homeId = fixture.team_h;
@@ -448,7 +433,7 @@ export default class FplApiService extends Service {
   }
 
   normalizeLeague(league) {
-    console.log('normalizeLeague');
+    // console.log('normalizeLeague');
 
     const id = league.id;
     delete league.id;
@@ -467,7 +452,7 @@ export default class FplApiService extends Service {
 
   normalizeFantasyTeams(teams) {
     try {
-      console.log('normalizeFantasyTeams');
+      // console.log('normalizeFantasyTeams');
 
       return teams.map((team) => {
         const id = team.id;
@@ -490,7 +475,7 @@ export default class FplApiService extends Service {
   }
 
   normalizeStandings(standings) {
-    console.log('normalizeStandings');
+    // console.log('normalizeStandings');
     return standings.map((standing) => {
       const id = standing.league_entry,
         teamId = standing.league_entry;
@@ -517,7 +502,7 @@ export default class FplApiService extends Service {
   }
 
   normalizeFantasyFixtures(fixtures) {
-    console.log('normalizeFantasyFixtures');
+    // console.log('normalizeFantasyFixtures');
 
     return fixtures.map((fixture) => {
       const gameWeekId = fixture.event,
@@ -623,7 +608,7 @@ export default class FplApiService extends Service {
   }
 
   normalizeTransactions(transactions) {
-    console.log('normalizeTransactions');
+    // console.log('normalizeTransactions');
     return transactions.map((transaction) => {
       const id = transaction.id,
         proPlayerInId = transaction.element_in,
