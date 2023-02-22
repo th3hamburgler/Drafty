@@ -20,9 +20,11 @@ export default class IndexController extends Controller {
     const leader = this.fplApi.leader,
       looser = this.fplApi.looser,
       flatTrackBully = this.fplApi.flatTrackBully,
+      luckyMan = this.fplApi.luckyMan,
       asleep = this.fplApi.asleep,
       tinkerMan = this.fplApi.tinkerMan,
-      benchWarmer = this.fplApi.benchWarmer;
+      benchWarmer = this.fplApi.benchWarmer,
+      changingRoom = this.fplApi.changingRoom;
 
     return [
       {
@@ -39,14 +41,13 @@ export default class IndexController extends Controller {
         value: pluralize(looser.get('total'), 'pt'),
         color: 'red',
       },
-      // {
-      //   // TODO - One man team
-      //   title: 'Del Boy',
-      //   icon: 'currency-pound',
-      //   manager: 'Tom O`Brien',
-      //   value: '15 trades',
-      //   color: 'lime',
-      // },
+      {
+        title: 'Lucky Man',
+        icon: 'clover',
+        manager: luckyMan.get('team.fullName'),
+        value: pluralize(luckyMan.get('points_against'), 'pt') + ' against',
+        color: 'lime',
+      },
       {
         title: 'Flat-track Bully',
         icon: 'black-eye',
@@ -82,14 +83,17 @@ export default class IndexController extends Controller {
         )} left on the bench`,
         color: 'red',
       },
-      // {
-      //   // todo
-      //   title: 'Lost the Changing Room',
-      //   icon: 'boxing',
-      //   manager: 'Steve Borrington',
-      //   value: '32 negative player pts',
-      //   color: 'lime',
-      // },
+      {
+        // todo
+        title: 'Lost the Changing Room',
+        icon: 'boxing',
+        manager: changingRoom.get('fullName'),
+        value: pluralize(
+          changingRoom.get('totalNegativePoints'),
+          'negative player pt'
+        ),
+        color: 'lime',
+      },
       // best defence (most points)
       // worst forward line
       // waste of a good keeper

@@ -124,21 +124,17 @@ export default class FplApiService extends Service {
   }
 
   get benchWarmer() {
-    console.log('benchWarmer');
-    // console.table(
-    //   this.fantasyTeams
-    //     .toArray()
-    //     .sortBy('totalLostBenchPoints')
-    //     .map((team) => {
-    //       return {
-    //         team: team.entry_name,
-    //         pointsBenched: team.totalLostBenchPoints,
-    //       };
-    //     })
-    // );
-
     return this.fantasyTeams.toArray().sortBy('totalLostBenchPoints')
       .lastObject;
+  }
+
+  get changingRoom() {
+    return this.fantasyTeams.toArray().sortBy('totalNegativePoints')
+      .firstObject;
+  }
+
+  get luckyMan() {
+    return this.fantasyStandings.toArray().sortBy('points_against').firstObject;
   }
 
   // Tasks

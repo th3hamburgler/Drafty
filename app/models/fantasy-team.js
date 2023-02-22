@@ -37,29 +37,31 @@ export default class FantasyTeamModel extends Model {
   get totalLostBenchPoints() {
     let points = 0;
 
-    let start = Date.now();
-    // console.time('bench');
     this.picks.forEach((p) => {
       if (p.multiplier === 0) {
         const totalPoints = p.get('appearance.total_points');
-        // console.log(totalPoints);
-        if (!isNaN(totalPoints)) {
+
+        if (totalPoints) {
           points += totalPoints;
-        } else {
-          console.log(
-            'missing points',
-            p.id,
-            p.get('player.web_name'),
-            p.get('appearance.id')
-          );
         }
       }
     });
-    // console.timeLog('bench');
-    // console.log(
-    //   this.entry_name + ' bench points ' + points,
-    //   Date.now() - start
-    // );
+    return points;
+  }
+
+  @cached
+  get totalNegativePoints() {
+    let points = 0;
+
+    this.picks.forEach((p) => {
+      if (p.multiplier !== 0) {
+        const totalPoints = p.get('appearance.total_points');
+
+        if (totalPoints < 0) {
+          points += totalPoints;
+        }
+      }
+    });
     return points;
   }
 }
