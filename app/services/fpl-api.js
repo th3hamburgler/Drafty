@@ -388,23 +388,56 @@ export default class FplApiService extends Service {
     });
   }
 
+  groupPicksByGameWeekAndPlayer(picks) {
+    const groupedPicks = {};
+
+    for (let i = 0; i < picks.length; i++) {
+      const pick = picks[i];
+      const gameWeekId = pick.get('gameWeek.id');
+      const playerId = pick.get('player.id');
+
+      if (!groupedPicks[gameWeekId]) {
+        groupedPicks[gameWeekId] = {};
+      }
+
+      if (!groupedPicks[gameWeekId][playerId]) {
+        groupedPicks[gameWeekId][playerId] = [];
+      }
+
+      groupedPicks[gameWeekId][playerId] = pick;
+    }
+
+    return groupedPicks;
+  }
+
   normalizePoints(payload, gameWeekId) {
     // console.log('normalizePoints');
 
     const allAppearances = [];
+
+    // Cache picks by gameweek and then player so we dont have
+    // to do an expensize find in the loops below
+    const picks = this.groupPicksByGameWeekAndPlayer(
+      this.store.peekAll('fantasy-pick')
+    );
 
     Object.keys(payload.elements).forEach((playerId) => {
       const appearances = [payload.elements[playerId]];
 
       appearances.forEach((appearance) => {
         const explain = appearance?.explain?.firstObject?.firstObject;
-        const pick = this.store.peekAll('fantasy-pick').find((p) => {
-          const id = parseInt(p.get('player.id')),
-            gw = parseInt(p.get('gameWeek.id'));
 
-          // find the pick of this player on the given game week
-          return id === parseInt(playerId) && gw === parseInt(gameWeekId);
-        });
+        //
+
+        const pick = picks[gameWeekId][playerId];
+
+        // const pick = this.store.peekAll('fantasy-pick').find((p) => {
+        //   const id = parseInt(p.get('player.id')),
+        //     gw = parseInt(p.get('gameWeek.id'));
+
+        //   // find the pick of this player on the given game week
+        //   return id === parseInt(playerId) && gw === parseInt(gameWeekId);
+        // });
 
         if (pick) {
           this.appearanceId++;

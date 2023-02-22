@@ -1,5 +1,5 @@
 import Model, { attr, belongsTo, hasMany } from '@ember-data/model';
-
+import { cached } from '@glimmer/tracking';
 export default class FantasyTeamModel extends Model {
   // Attributes
 
@@ -33,9 +33,12 @@ export default class FantasyTeamModel extends Model {
     return this.transactions.filterBy().filterBy('kind', 'di').length;
   }
 
+  @cached
   get totalLostBenchPoints() {
     let points = 0;
 
+    let start = Date.now();
+    // console.time('bench');
     this.picks.forEach((p) => {
       if (p.multiplier === 0) {
         const totalPoints = p.get('appearance.total_points');
@@ -52,7 +55,11 @@ export default class FantasyTeamModel extends Model {
         }
       }
     });
-
+    // console.timeLog('bench');
+    // console.log(
+    //   this.entry_name + ' bench points ' + points,
+    //   Date.now() - start
+    // );
     return points;
   }
 }
