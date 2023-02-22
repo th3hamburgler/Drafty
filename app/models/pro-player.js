@@ -20,7 +20,7 @@ export default class ProPlayerModel extends Model {
 
   // Aliases
 
-  get appearance() {
-    return this.appearances.firstObject;
-  }
+  // get appearance() {
+  //   return this.appearances.firstObject;
+  // }
 }

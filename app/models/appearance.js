@@ -35,6 +35,7 @@ export default class AppearanceModel extends Model {
 
   @belongsTo('pro-player') player;
   @belongsTo('fantasy-pick') pick;
+  @belongsTo('game-week') gameWeek;
 
   // Getters
   get pointsDescriptions() {

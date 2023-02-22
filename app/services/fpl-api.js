@@ -124,6 +124,7 @@ export default class FplApiService extends Service {
   }
 
   get benchWarmer() {
+    console.log('benchWarmer');
     // console.table(
     //   this.fantasyTeams
     //     .toArray()
@@ -151,16 +152,6 @@ export default class FplApiService extends Service {
 
     await this.getLeagueData.perform();
 
-    // Loop over game weeks and collect pro player appearance data
-    this.gameWeeks.forEach(async (week) => {
-      // Ignore game weeks in the future
-      if (parseInt(week.id) <= parseInt(this.currentGameWeek.id)) {
-        await this.getMatches.perform(week.id);
-      }
-    });
-
-    await waitForProperty(this, 'getMatches.isIdle');
-
     // Loop over game weeks for each team and collect their fantasy picks
     this.fantasyTeams.forEach((team) => {
       this.gameWeeks.forEach(async (week) => {
@@ -169,6 +160,16 @@ export default class FplApiService extends Service {
           await this.getTeamData.perform(team, week.id);
         }
       });
+    });
+
+    await waitForProperty(this, 'getTeamData.isIdle');
+
+    // Loop over game weeks and collect pro player appearance data
+    this.gameWeeks.forEach(async (week) => {
+      // Ignore game weeks in the future
+      if (parseInt(week.id) <= parseInt(this.currentGameWeek.id)) {
+        await this.getMatches.perform(week.id);
+      }
     });
 
     // Transactions
@@ -203,7 +204,7 @@ export default class FplApiService extends Service {
 
       this.proFixtures = this.normalizeFixtures(result.data, this.proTeams);
 
-      this.proPoints = this.normalizePoints(result.data, this.proPlayers);
+      this.proPoints = this.normalizePoints(result.data, gameWeekId);
     } catch (e) {
       console.log(e);
     }
@@ -242,13 +243,6 @@ export default class FplApiService extends Service {
       const gameWeek = this.store.peekRecord('game-week', gameWeekId);
       const picks = this.normalizePicks(result.data, team, gameWeek);
       this.fantasyPicks.addObjects(picks);
-
-      // const appearance = await axios.get(
-      //   PICKS.replace(':manager_id', team.entry_id).replace(
-      //     ':event_id',
-      //     gameWeekId
-      //   )
-      // );
 
       return true;
     } catch (e) {
@@ -319,7 +313,7 @@ export default class FplApiService extends Service {
         data: [
           {
             id: id,
-            type: 'pro_team',
+            type: 'pro-team',
             attributes: team,
             relationships: {},
           },
@@ -332,7 +326,7 @@ export default class FplApiService extends Service {
     // console.log('normalizeProPlayers');
 
     return proPlayers.map((p) => {
-      const id = p.id,
+      const id = parseInt(p.id),
         positionId = p.element_type,
         teamId = p.team;
 
@@ -347,7 +341,7 @@ export default class FplApiService extends Service {
         data: [
           {
             id: id,
-            type: 'pro_player',
+            type: 'pro-player',
             attributes: p,
             relationships: {},
           },
@@ -394,7 +388,7 @@ export default class FplApiService extends Service {
     });
   }
 
-  normalizePoints(payload) {
+  normalizePoints(payload, gameWeekId) {
     // console.log('normalizePoints');
 
     const allAppearances = [];
@@ -404,28 +398,41 @@ export default class FplApiService extends Service {
 
       appearances.forEach((appearance) => {
         const explain = appearance?.explain?.firstObject?.firstObject;
+        const pick = this.store.peekAll('fantasy-pick').find((p) => {
+          const id = parseInt(p.get('player.id')),
+            gw = parseInt(p.get('gameWeek.id'));
 
-        this.appearanceId++;
-        const id = this.appearanceId;
+          // find the pick of this player on the given game week
+          return id === parseInt(playerId) && gw === parseInt(gameWeekId);
+        });
 
-        const player = this.store.peekRecord('pro-player', playerId);
+        if (pick) {
+          this.appearanceId++;
+          const id = this.appearanceId;
 
-        const model = this.store.push({
-          data: [
-            {
-              id: id,
-              type: 'appearance',
-              attributes: { ...appearance.stats, explain: explain },
-              relationships: {},
-            },
-          ],
-        }).firstObject;
+          const player = this.store.peekRecord('pro-player', playerId);
+          const gameWeek = this.store.peekRecord('game-week', gameWeekId);
 
-        if (player) {
-          model.player = player;
+          const model = this.store.push({
+            data: [
+              {
+                id: id,
+                type: 'appearance',
+                attributes: { ...appearance.stats, explain: explain },
+                relationships: {},
+              },
+            ],
+          }).firstObject;
+
+          if (player) {
+            model.player = player;
+          }
+
+          model.gameWeek = gameWeek;
+          model.pick = pick;
+
+          allAppearances.pushObject(model);
         }
-
-        allAppearances.pushObject(model);
       });
     });
 
@@ -543,19 +550,19 @@ export default class FplApiService extends Service {
     const picks = payload.picks.map((pick, index) => {
       this.pickId++;
       const id = this.pickId,
-        proPlayerId = pick.element;
+        proPlayerId = parseInt(pick.element);
 
       delete pick.element;
 
       const player = this.store.peekRecord('pro-player', proPlayerId);
 
-      const appearance = this.store.peekAll('appearance').find((app) => {
-        return parseInt(app.get('player.id')) === proPlayerId;
-      });
+      // const appearance = this.store.peekAll('appearance').find((app) => {
+      //   const id = parseInt(app.get('player.id')),
+      //     gw = parseInt(app.get('gameWeek.id'));
 
-      if (!appearance) {
-        console.log('appearance not found', gameWeek.name);
-      }
+      //   // find the appearance of this player on the given game week
+      //   return id === proPlayerId && gw === parseInt(gameWeek.id);
+      // });
 
       // assign a 0 multiplier to any subs when the game week began
       // it looks like the draft api always assigns 1 to this property
@@ -577,7 +584,8 @@ export default class FplApiService extends Service {
       model.player = player;
       model.team = fantasyTeam;
       model.gameWeek = gameWeek;
-      model.appearance = appearance;
+      // model.appearance = appearance;
+      // console.log('===', model.get('player.web_name'), appearance.id);
 
       return model;
     });

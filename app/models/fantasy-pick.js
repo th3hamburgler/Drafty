@@ -11,5 +11,5 @@ export default class FantasyPickModel extends Model {
   @belongsTo('pro-player') player;
   @belongsTo('fantasy-team') team;
   @belongsTo('game-week') gameWeek;
-  @belongsTo('appearance') appearance;
+  @belongsTo('appearance', { inverse: 'pick' }) appearance;
 }

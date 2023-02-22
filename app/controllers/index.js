@@ -17,22 +17,26 @@ export default class IndexController extends Controller {
       return [];
     }
 
-    // const flatTrackBully = this.fplApi.flatTrackBully,
-    //   benchWarmer = this.fplApi.benchWarmer;
+    const leader = this.fplApi.leader,
+      looser = this.fplApi.looser,
+      flatTrackBully = this.fplApi.flatTrackBully,
+      asleep = this.fplApi.asleep,
+      tinkerMan = this.fplApi.tinkerMan,
+      benchWarmer = this.fplApi.benchWarmer;
 
     return [
       {
         title: 'Leader',
         icon: 'trophy',
-        manager: this.fplApi.leader.get('team.fullName'),
-        value: pluralize(this.fplApi.leader.get('total'), 'pt'),
+        manager: leader.get('team.fullName'),
+        value: pluralize(leader.get('total'), 'pt'),
         color: 'cyan',
       },
       {
         title: 'Woodenspoon',
         icon: 'spoon',
-        manager: this.fplApi.looser.get('team.fullName'),
-        value: pluralize(this.fplApi.looser.get('total'), 'pt'),
+        manager: looser.get('team.fullName'),
+        value: pluralize(looser.get('total'), 'pt'),
         color: 'red',
       },
       // {
@@ -43,47 +47,41 @@ export default class IndexController extends Controller {
       //   value: '15 trades',
       //   color: 'lime',
       // },
-      // {
-      //   title: 'Flat-track Bully',
-      //   icon: 'black-eye',
-      //   manager: flatTrackBully.get('team.fullName'),
-      //   value: `${pluralize(
-      //     flatTrackBully.get('pointsDifference'),
-      //     'pt'
-      //   )} difference`,
-      //   color: 'yellow',
-      // },
-      // {
-      //   title: 'Asleep at the wheel',
-      //   icon: 'steering-wheel',
-      //   manager: this.fplApi.asleep.get('team.fullName'),
-      //   value: pluralize(
-      //     this.fplApi.asleep.get('team.totalTransactions'),
-      //     'transfer'
-      //   ),
-      //   color: 'yellow',
-      // },
-      // {
-      //   title: 'The Tinker Man',
-      //   icon: 'beaker',
-      //   manager: this.fplApi.tinkerMan.get('team.fullName'),
-      //   value: pluralize(
-      //     this.fplApi.tinkerMan.get('team.totalTransactions'),
-      //     'transfer'
-      //   ),
-      //   color: 'cyan',
-      // },
-      // {
-      //   // todo
-      //   title: 'Bench Warmer',
-      //   icon: 'bench',
-      //   manager: benchWarmer.get('fullName'),
-      //   value: `${pluralize(
-      //     benchWarmer.get('totalLostBenchPoints'),
-      //     'pt'
-      //   )} left on the bench`,
-      //   color: 'red',
-      // },
+      {
+        title: 'Flat-track Bully',
+        icon: 'black-eye',
+        manager: flatTrackBully.get('team.fullName'),
+        value: `${pluralize(
+          flatTrackBully.get('pointsDifference'),
+          'pt'
+        )} difference`,
+        color: 'yellow',
+      },
+      {
+        title: 'Asleep at the wheel',
+        icon: 'steering-wheel',
+        manager: asleep.get('team.fullName'),
+        value: pluralize(asleep.get('team.totalTransactions'), 'transfer'),
+        color: 'yellow',
+      },
+      {
+        title: 'The Tinker Man',
+        icon: 'beaker',
+        manager: tinkerMan.get('team.fullName'),
+        value: pluralize(tinkerMan.get('team.totalTransactions'), 'transfer'),
+        color: 'cyan',
+      },
+      {
+        // todo
+        title: 'Bench Warmer',
+        icon: 'bench',
+        manager: benchWarmer.get('fullName'),
+        value: `${pluralize(
+          benchWarmer.get('totalLostBenchPoints'),
+          'pt'
+        )} left on the bench`,
+        color: 'red',
+      },
       // {
       //   // todo
       //   title: 'Lost the Changing Room',
