@@ -39,4 +39,12 @@ export default class FantasyStandingModel extends Model {
   get pointsDifference() {
     return parseInt(this.points_for - this.points_against);
   }
+
+  get pointsDifferencePerGame() {
+    return Math.round(this.pointsDifference / this.matches_played);
+  }
+
+  get pointsAgainstPerGame() {
+    return Math.round(this.points_against / this.matches_played);
+  }
 }

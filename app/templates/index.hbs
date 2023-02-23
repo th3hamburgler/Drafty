@@ -29,9 +29,70 @@
           @manager={{award.manager}}
           @value={{award.value}}
           @color={{award.color}}
+          @showMore={{fn this.showAwardModal award.type}}
         />
       {{/each}}
 
     </main>
+
+    <Modal @show={{this.showModal}} @close={{this.closeAwardModal}}>
+
+      {{#if (eq this.awardModal "leader")}}
+
+        <Award::Info::LeagueTable
+          @totals={{this.leaderTotals}}
+          @color="text-cyan"
+        />
+
+      {{else if (eq this.awardModal "spoon")}}
+
+        <Award::Info::LeagueTable
+          @totals={{this.spoonTotals}}
+          @color="text-red"
+        />
+
+      {{else if (eq this.awardModal "lucky-man")}}
+
+        <Award::Info::LuckyMan @totals={{this.luckyManTotals}} />
+
+      {{else if (eq this.awardModal "flat-track-bully")}}
+
+        <Award::Info::FlatTrackBully @totals={{this.flatTrackBullyTotals}} />
+
+      {{else if (eq this.awardModal "asleep")}}
+
+        <Award::Info::Asleep @totals={{this.asleepTotals}} />
+
+      {{else if (eq this.awardModal "tinker-man")}}
+
+        <Award::Info::TinkerMan @totals={{this.tinkerManTotals}} />
+
+      {{else if (eq this.awardModal "bench-warmer")}}
+
+        <Award::Info::BenchWarmer @totals={{this.benchWarmerTotals}} />
+
+      {{else if (eq this.awardModal "changing-room")}}
+
+        <Award::Info::ChangingRoom @totals={{this.changingRoomTotals}} />
+
+      {{else if (eq this.awardModal "loyal")}}
+
+        <Award::Info::Loyal @totals={{this.loyalTotals}} />
+
+      {{else if (eq this.awardModal "goal")}}
+
+        <Award::Info::Goal @totals={{this.cantBuyAGoalTotal}} />
+
+      {{else if (eq this.awardModal "wasted-keeper")}}
+
+        <Award::Info::Keeper @totals={{this.wastedKeeperTotals}} />
+
+      {{else if (eq this.awardModal "the-wall")}}
+
+        <Award::Info::Wall @totals={{this.theWallTotals}} />
+
+      {{/if}}
+    </Modal>
+
   {{/if}}
 </div>

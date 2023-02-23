@@ -16,10 +16,9 @@
 
   <h3 class="text-{{@color}} text-sm">{{@value}}</h3>
 
-  {{svg-jar
-    "outline.information-circle"
-    class="w-6 h-6 absolute top-6 right-6 opacity-50"
-  }}
+  <button class="absolute top-6 right-6" type="button" {{on "click" @showMore}}>
+    {{svg-jar "outline.information-circle" class="w-6 h-6  opacity-50"}}
+  </button>
 </div>
 {{! 
 text-cyan

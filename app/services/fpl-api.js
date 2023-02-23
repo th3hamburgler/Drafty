@@ -71,30 +71,22 @@ export default class FplApiService extends Service {
     });
   }
 
+  get standings() {
+    return this.fantasyStandings.toArray();
+  }
+
   get leader() {
-    if (this.loading) {
-      return;
-    }
-    const standing = this.fantasyStandings[0];
-    return standing;
+    return this.standings.firstObject;
   }
 
   get looser() {
-    if (this.loading) {
-      return;
-    }
-    const standing = this.fantasyStandings[9];
-    return standing;
+    return this.standings.lastObject;
   }
 
-  get flatTrackBully() {
-    const standings = this.fantasyStandings.toArray().map((s) => {
-      return s;
-    });
-
+  get flatTrackBullyTotals() {
     // Sort with highest points p score
 
-    const sorted = standings.sort((a, b) => {
+    const sorted = this.fantasyStandings.toArray().sort((a, b) => {
       if (a.pointsDifference < b.pointsDifference) {
         return 1;
       } else if (a.pointsDifference > b.pointsDifference) {
@@ -108,60 +100,90 @@ export default class FplApiService extends Service {
       }
     });
 
-    return sorted.firstObject;
+    return sorted;
+  }
+
+  get flatTrackBully() {
+    const standings = this.flatTrackBullyTotals;
+
+    return standings.firstObject;
+  }
+
+  get tinkerManTotals() {
+    // Sort with highest number of transactions
+    return this.fantasyStandings
+      .toArray()
+      .sortBy('team.totalTransactions')
+      .reverse();
   }
 
   get tinkerMan() {
-    // Sort with highest number of transactions
-    return this.fantasyStandings.toArray().sortBy('team.totalTransactions')
-      .lastObject;
+    return this.tinkerManTotals.firstObject;
+  }
+
+  get asleepTotals() {
+    return this.fantasyStandings.toArray().sortBy('team.totalTransactions');
   }
 
   get asleep() {
     // Sort with lowest number of transactions
-    return this.fantasyStandings.toArray().sortBy('team.totalTransactions')
-      .firstObject;
+    return this.asleepTotals.firstObject;
+  }
+
+  get benchWarmerTotals() {
+    return this.fantasyTeams.toArray().sortBy('totalLostBenchPoints').reverse();
   }
 
   get benchWarmer() {
-    return this.fantasyTeams.toArray().sortBy('totalLostBenchPoints')
-      .lastObject;
+    return this.benchWarmerTotals.firstObject;
+  }
+
+  get changingRoomTotals() {
+    return this.fantasyTeams.toArray().sortBy('totalNegativePoints');
   }
 
   get changingRoom() {
-    return this.fantasyTeams.toArray().sortBy('totalNegativePoints')
-      .firstObject;
+    return this.changingRoomTotals.firstObject;
   }
 
+  get luckyManTotals() {
+    return this.fantasyStandings.toArray().sortBy('points_against');
+  }
   get luckyMan() {
-    return this.fantasyStandings.toArray().sortBy('points_against').firstObject;
+    return this.luckyManTotals.firstObject;
   }
 
+  get cantBuyAGoalTotal() {
+    return this.fantasyTeams.toArray().sortBy('totalTeamGoals');
+  }
   get cantBuyAGoal() {
-    return this.fantasyTeams.toArray().sortBy('totalTeamGoals').firstObject;
+    return this.cantBuyAGoalTotal.firstObject;
+  }
+
+  get wastedKeeperTotals() {
+    return this.fantasyTeams.toArray().sortBy('wastedKeeperPoints').reverse();
   }
 
   get wastedKeeper() {
-    return this.fantasyTeams.toArray().sortBy('wastedKeeperPoints').lastObject;
+    return this.wastedKeeperTotals.firstObject;
   }
 
-  get cleanSheets() {
-    return this.fantasyTeams.toArray().sortBy('totalCleanSheets').lastObject;
+  get theWallTotals() {
+    return this.fantasyTeams.toArray().sortBy('totalCleanSheets').reverse();
+  }
+  get theWall() {
+    return this.theWallTotals.firstObject;
+  }
+
+  get loyalTotals() {
+    return this.fantasyTeams
+      .toArray()
+      .sortBy('numberOfOriginalSquadPlayers')
+      .reverse();
   }
 
   get loyal() {
-    // const teams = [];
-    // this.fantasyTeams.toArray().forEach((t) => {
-    //   teams.pushObject({
-    //     name: t.entry_name,
-    //     players: t.numberOfOriginalSquadPlayers,
-    //   });
-    // });
-
-    // console.table(teams);
-
-    return this.fantasyTeams.toArray().sortBy('numberOfOriginalSquadPlayers')
-      .lastObject;
+    return this.loyalTotals.firstObject;
   }
 
   // Tasks
