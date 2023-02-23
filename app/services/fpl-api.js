@@ -4,7 +4,8 @@ import { tracked } from '@glimmer/tracking';
 import { task, all, waitForProperty, timeout } from 'ember-concurrency';
 import axios from 'axios';
 import config from 'drafty/config/environment';
-import Entries from 'drafty/mirage/fixtures/entries';
+import Entries from 'drafty/data/entries';
+import Live from 'drafty/data/live';
 
 const ACCESS_KEY = 'f9a0d214fd6ea502e71561e1117c5f0d',
   PROXY =
@@ -235,10 +236,15 @@ export default class FplApiService extends Service {
   getMatches = task(async (gameWeekId) => {
     try {
       // console.log('Task: getMatches start');
+      let result;
 
-      const result = await axios.get(
-        EVENTS_LIVE.replace(':game_week_id', gameWeekId)
-      );
+      if (Live && Live[gameWeekId]) {
+        result = { data: Live[gameWeekId] };
+      } else {
+        result = await axios.get(
+          EVENTS_LIVE.replace(':game_week_id', gameWeekId)
+        );
+      }
 
       // console.log('Task: getMatches resolve');
 
@@ -462,7 +468,7 @@ export default class FplApiService extends Service {
         return model;
       });
     } catch (e) {
-      console.error('Error thrown in normalizeFixtures', e);
+      console.error('Error thrown in normalizeFixtures', payload, e);
     }
   }
 
