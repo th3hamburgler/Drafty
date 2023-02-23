@@ -11,6 +11,9 @@ module.exports = {
         yellow: '#EAF205',
         purple: '#340040',
       },
+      fontFamily: {
+        sans: '"Premier League W01"',
+      },
       gridColumn: {
         'span-13': 'span 13 / span 13',
         'span-14': 'span 14 / span 14',
