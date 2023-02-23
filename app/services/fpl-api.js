@@ -6,12 +6,21 @@ import axios from 'axios';
 import config from 'drafty/config/environment';
 import Entries from 'drafty/data/entries';
 import Live from 'drafty/data/live';
+import { ExponentialBackoffPolicy } from 'ember-concurrency-retryable';
+import { addListener, removeListener } from '@ember/object/events';
+import { registerDestructor } from '@ember/destroyable';
+
+const backoffPolicy = new ExponentialBackoffPolicy({
+  multiplier: 1.5,
+  minDelay: 30,
+  maxDelay: 400,
+});
 
 const ACCESS_KEY = 'f9a0d214fd6ea502e71561e1117c5f0d',
   PROXY =
     config.environment === 'production'
       ? `https://api.scrapestack.com/scrape?access_key=${ACCESS_KEY}&url=`
-      : ``,
+      : `https://api.scrapestack.com/scrape?access_key=${ACCESS_KEY}&url=`,
   DRAFT_API = `${PROXY}https://draft.premierleague.com/api`,
   FPL_API = `${PROXY}https://fantasy.premierleague.com/api`,
   LEAGUE_DETAILS_API = `${DRAFT_API}/league/46575/details`,
@@ -180,7 +189,7 @@ export default class FplApiService extends Service {
 
   // Tasks
 
-  bootstrap = task(async () => {
+  bootstrap = task({ retryable: backoffPolicy }, async () => {
     try {
       await this.getBootstrap.perform();
 
@@ -215,25 +224,31 @@ export default class FplApiService extends Service {
 
       return this;
     } catch (e) {
-      console.error('Error thrown in bootstrap task', e);
+      console.log('Error thrown in bootstrap task', e);
+      throw Error(e);
     }
   });
 
-  getBootstrap = task(async () => {
+  getBootstrap = task({ retryable: backoffPolicy }, async () => {
     try {
       // console.log('Task: getBootstrap start');
       const result = await axios.get(BOOTSTRAP_STATIC);
+      if (!result.data) {
+        console.log(result);
+        throw new Error('Did not get payload');
+      }
       // console.log('Task: getBootstrap resolve');
       this.gameWeeks = this.normalizeGameWeeks(result.data.events);
       this.positions = this.normalizePositions(result.data.element_types);
       this.proTeams = this.normalizeTeams(result.data.teams);
       this.proPlayers = this.normalizeProPlayers(result.data.elements);
     } catch (e) {
-      console.error('Error thrown in getBootstrap task', e);
+      console.log('Error thrown in getBootstrap task', e);
+      throw new Error(e);
     }
   });
 
-  getMatches = task(async (gameWeekId) => {
+  getMatches = task({ retryable: backoffPolicy }, async (gameWeekId) => {
     try {
       // console.log('Task: getMatches start');
       let result;
@@ -244,6 +259,10 @@ export default class FplApiService extends Service {
         result = await axios.get(
           EVENTS_LIVE.replace(':game_week_id', gameWeekId)
         );
+        if (!result.data) {
+          console.log(result);
+          throw new Error('Did not get payload');
+        }
       }
 
       // console.log('Task: getMatches resolve');
@@ -255,14 +274,21 @@ export default class FplApiService extends Service {
 
       this.proPoints = this.normalizePoints(result.data, gameWeekId);
     } catch (e) {
-      console.error('Error thrown in getMatches task', e);
+      console.log('Error thrown in getMatches task', e);
+      throw new Error(e);
     }
   });
 
-  getLeagueData = task(async () => {
+  getLeagueData = task({ retryable: backoffPolicy }, async () => {
     try {
       // console.log('Task: getLeagueData start');
       const result = await axios.get(LEAGUE_DETAILS_API);
+
+      if (!result.data) {
+        console.log(result);
+        throw new Error('Did not get payload');
+      }
+
       // console.log('Task: getLeagueData resolve');
       this.fantasyLeague = this.normalizeLeague(result.data.league);
       this.fantasyTeams = this.normalizeFantasyTeams(
@@ -273,11 +299,12 @@ export default class FplApiService extends Service {
 
       return true;
     } catch (e) {
-      console.error('Error thrown in getLeagueData task', e);
+      console.log('Error thrown in getLeagueData task', e);
+      throw new Error(e);
     }
   });
 
-  getTeamData = task(async (team, gameWeekId) => {
+  getTeamData = task({ retryable: backoffPolicy }, async (team, gameWeekId) => {
     try {
       // console.log('Task: getTeamData start');
 
@@ -299,6 +326,10 @@ export default class FplApiService extends Service {
         );
 
         result = await axios.get(url);
+        if (!result.data) {
+          console.log(result);
+          throw new Error('Did not get payload');
+        }
       }
       // console.log('Task: getTeamData resolve');
 
@@ -308,25 +339,89 @@ export default class FplApiService extends Service {
 
       return true;
     } catch (e) {
-      console.error('Error thrown in getTeamData task', e);
+      console.log('Error thrown in getTeamData task', e);
+      throw new Error(e);
     }
   });
 
-  getTransactions = task(async (team, gameWeekId) => {
-    try {
-      // console.log('Task: getTransactions start');
+  getTransactions = task(
+    { retryable: backoffPolicy },
+    async (team, gameWeekId) => {
+      try {
+        // console.log('Task: getTransactions start');
 
-      const result = await axios.get(TRANSACTIONS);
-      // console.log('Task: getTransactions resolve');
-      this.transactions = this.normalizeTransactions(result.data.transactions);
+        const result = await axios.get(TRANSACTIONS);
+        if (!result.data) {
+          console.log(result);
+          throw new Error('Did not get payload');
+        }
 
-      return true;
-    } catch (e) {
-      console.error('Error thrown in getTransactions task', e);
+        // console.log('Task: getTransactions resolve');
+        this.transactions = this.normalizeTransactions(
+          result.data.transactions
+        );
+
+        return true;
+      } catch (e) {
+        console.log('Error thrown in getTransactions task', e);
+        throw new Error(e);
+      }
     }
-  });
+  );
 
   // Methods
+
+  constructor() {
+    super(...arguments);
+    addListener(this, 'getLeagueData:started', this, this.onTaskStarted);
+    addListener(this, 'getLeagueData:retrying', this, this.onTaskRetrying);
+    addListener(this, 'getLeagueData:retried', this, this.onTaskRetried);
+    addListener(this, 'getLeagueData:succeeded', this, this.onTaskSucceeded);
+    addListener(this, 'getLeagueData:errored', this, this.onTaskErrored);
+
+    registerDestructor(this, () => {
+      removeListener(this, 'getLeagueData:started', this, this.onTaskStarted);
+      removeListener(this, 'getLeagueData:retrying', this, this.onTaskRetrying);
+      removeListener(this, 'getLeagueData:retried', this, this.onTaskRetried);
+      removeListener(
+        this,
+        'getLeagueData:succeeded',
+        this,
+        this.onTaskSucceeded
+      );
+      removeListener(this, 'getLeagueData:errored', this, this.onTaskErrored);
+    });
+  }
+
+  onTaskStarted(taskInstance) {
+    const [id] = taskInstance.args;
+    console.log(id, `Task ${id}: making AJAX request`);
+  }
+
+  onTaskRetrying(taskInstance, retryInstance) {
+    const [id] = taskInstance.args;
+    const retryCount = retryInstance.retryCount;
+    console.log(id, `Task ${id}: retrying request (${retryCount})`);
+  }
+
+  onTaskRetried(taskInstance, retryInstance) {
+    const [id] = taskInstance.args;
+    const retryCount = retryInstance.retryCount;
+    console.log(
+      id,
+      `Task ${id}: request succeeded after ${retryCount + 1} tries`
+    );
+  }
+
+  onTaskSucceeded(taskInstance) {
+    const [id] = taskInstance.args;
+    console.log(id, `Task ${id}: AJAX done`);
+  }
+
+  onTaskErrored(taskInstance, error) {
+    const [id] = taskInstance.args;
+    console.log(id, `Task ${id}: AJAX failed because of '${error.message}'`);
+  }
 
   normalizeGameWeeks(weeks) {
     try {
@@ -347,7 +442,7 @@ export default class FplApiService extends Service {
         }).firstObject;
       });
     } catch (e) {
-      console.error('Error thrown in normalizeGameWeeks', e);
+      console.log('Error thrown in normalizeGameWeeks', e);
     }
   }
 
@@ -369,7 +464,7 @@ export default class FplApiService extends Service {
         }).firstObject;
       });
     } catch (e) {
-      console.error('Error thrown in normalizePositions', e);
+      console.log('Error thrown in normalizePositions', e);
     }
   }
 
@@ -392,7 +487,7 @@ export default class FplApiService extends Service {
         }).firstObject;
       });
     } catch (e) {
-      console.error('Error thrown in normalizeTeams', e);
+      console.log('Error thrown in normalizeTeams', e);
     }
   }
 
@@ -430,7 +525,7 @@ export default class FplApiService extends Service {
         return model;
       });
     } catch (e) {
-      console.error('Error thrown in normalizeProPlayers', e);
+      console.log('Error thrown in normalizeProPlayers', e);
     }
   }
 
@@ -468,7 +563,7 @@ export default class FplApiService extends Service {
         return model;
       });
     } catch (e) {
-      console.error('Error thrown in normalizeFixtures', payload, e);
+      console.log('Error thrown in normalizeFixtures', payload, e);
     }
   }
 
@@ -556,7 +651,7 @@ export default class FplApiService extends Service {
 
       return allAppearances;
     } catch (e) {
-      console.error('Error thrown in normalizePoints', e);
+      console.log('Error thrown in normalizePoints', e);
     }
   }
 
@@ -578,7 +673,7 @@ export default class FplApiService extends Service {
         ],
       }).firstObject;
     } catch (e) {
-      console.error('Error thrown in normalizeLeague', e);
+      console.log('Error thrown in normalizeLeague', e);
     }
   }
 
@@ -602,7 +697,7 @@ export default class FplApiService extends Service {
         }).firstObject;
       });
     } catch (e) {
-      console.error('Error thrown in normalizeFantasyTeams', e);
+      console.log('Error thrown in normalizeFantasyTeams', e);
     }
   }
 
@@ -633,7 +728,7 @@ export default class FplApiService extends Service {
         return model;
       });
     } catch (e) {
-      console.error('Error thrown in normalizeStandings', e);
+      console.log('Error thrown in normalizeStandings', e);
     }
   }
 
@@ -675,7 +770,7 @@ export default class FplApiService extends Service {
         return model;
       });
     } catch (e) {
-      console.error('Error thrown in normalizeFantasyFixtures', e);
+      console.log('Error thrown in normalizeFantasyFixtures', e);
     }
   }
 
@@ -751,7 +846,7 @@ export default class FplApiService extends Service {
 
       return picks;
     } catch (e) {
-      console.error('Error thrown in normalizePicks', e);
+      console.log('Error thrown in normalizePicks', e);
     }
   }
 
@@ -797,7 +892,7 @@ export default class FplApiService extends Service {
         return model;
       });
     } catch (e) {
-      console.error('Error thrown in normalizeTransactions', e);
+      console.log('Error thrown in normalizeTransactions', e);
     }
   }
 
