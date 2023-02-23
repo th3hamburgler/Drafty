@@ -1,0 +1,40 @@
+<table class="w-full border-t-4 border-red bg-purple text-white">
+  <thead>
+    <tr>
+      <th colspan="4" class="py-5 text-lg font-bold text-center">
+        Game Week PL Fixtures
+      </th>
+    </tr>
+    <tr class="border-b border-white border-opacity-20">
+      <th class="text-sm py-4 px-3 pl-6 text-left">Date</th>
+      <th class="text-sm py-4 px-3 text-left">Home</th>
+      <th class="text-sm py-4 px-3"></th>
+      <th class="text-sm py-4 px-3 pr-6 text-right">Away</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each @fixtures as |game|}}
+      <tr class="border-b border-white border-opacity-20">
+        <td class="py-4 px-3 pl-6 text-xs md:text-sm opacity-70">
+          {{moment-format game.kickoff_time "ddd Do MMM HH:mm"}}
+        </td>
+        <td
+          class="py-4 px-3 text-xl font-bold text-left"
+        >{{game.home.short_name}}</td>
+        <td
+          class="py-4 px-3 text-lg md:text-2xl font-bold text-center whitespace-nowrap"
+        >{{game.score}}</td>
+        <td
+          class="py-4 px-3 text-xl text-right font-bold pr-6"
+        >{{game.away.short_name}}</td>
+      </tr>
+
+    {{else}}
+
+      <tr>
+        <td colspan="4" class="py-24 px-3 text-lg text-center">Game week not
+          active yet</td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>

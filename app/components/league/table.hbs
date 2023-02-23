@@ -1,0 +1,52 @@
+<table class="w-full border-t-4 border-yellow bg-purple text-white">
+  <thead>
+    <tr>
+      <th colspan="5" class="py-5 text-lg font-bold text-center">
+        League Table
+      </th>
+    </tr>
+    <tr class="border-b border-white border-opacity-20">
+      <th
+        scope="col"
+        class="hidden sm:block text-sm py-4 px-3 pl-6 text-left"
+      >Rank</th>
+      <th scope="col" class="text-sm py-4 px-3 text-left">Team</th>
+      <th
+        scope="col"
+        class="hidden sm:block text-sm text-center py-4 px-3"
+      >+/-</th>
+      <th scope="col" class="text-sm text-center py-4 px-3">Points</th>
+      <th scope="col" class="text-sm text-right py-4 px-3 pr-6">Week</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each @standings as |standing|}}
+
+      <tr class="border-b border-white border-opacity-20 text-sm">
+        <td
+          class="hidden sm:table-cell whitespace-nowrap py-4 px-3 pl-6 sm:pl-6 lg:pl-8"
+        >{{standing.last_rank}}</td>
+        <td class="whitespace-nowrap py-4 px-3">
+          <h1
+            class="font-bold text-lg md:text-2xl"
+          >{{standing.team.entry_name}}</h1>
+          <h2
+            class="text-base md:text-xl opacity-70"
+          >{{standing.team.player_first_name}}
+            {{standing.team.player_last_name}}</h2>
+        </td>
+        <td class="whitespace-nowrap py-4 px-3 text-center text-lg md:text-2xl">
+          {{standing.points_for}}
+        </td>
+        <td
+          class="hidden sm:table-cell whitespace-nowrap py-4 px-3 text-center text-lg md:text-2xl"
+        >
+          {{standing.total}}
+        </td>
+        <td
+          class="relative whitespace-nowrap py-4 px-3 pr-6 text-right text-lg md:text-2xl"
+        >+3</td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>

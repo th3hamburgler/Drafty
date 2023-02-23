@@ -5,7 +5,7 @@
 
   <Header
     @loading={{this.loading}}
-    @title="Live Data"
+    @title="Match Day"
     @text="The latest scores and standings
       for the current game week"
   />
@@ -30,26 +30,30 @@
           aria-label="Pagination"
         >
           <div class="hidden sm:block">
-            <p class="text-sm">
+            <p class="text-lg font-bold">
               Game Week
-              {{this.fplApi.currentGameWeek.id}}
+              {{this.gameWeek.id}}
             </p>
           </div>
           <div class="flex flex-1 justify-between sm:justify-end">
-            <a
-              href="#"
-              class="relative inline-flex items-center rounded-md bg-cyan px-4 py-2 text-sm font-medium text-black hover:opacity-90"
-            >Previous</a>
-            <a
-              href="#"
-              class="relative ml-3 inline-flex items-center rounded-md bg-cyan px-4 py-2 text-sm font-medium text-black hover:opacity-90"
-            >Next</a>
+            <LinkTo
+              @route="live"
+              @query={{hash week=this.prevGameWeek}}
+              class="relative inline-flex items-center rounded-md bg-cyan px-4 py-2 text-sm font-medium text-black
+                {{if this.disablePrev 'opacity-50' 'hover:opacity-90'}}"
+            >Previous</LinkTo>
+            <LinkTo
+              @route="live"
+              @query={{hash week=this.nextGameWeek}}
+              class="relative ml-3 inline-flex items-center rounded-md bg-cyan px-4 py-2 text-sm font-medium text-black
+                {{if this.disableNext 'opacity-50' 'hover:opacity-90'}}"
+            >Next</LinkTo>
           </div>
         </nav>
 
         <ul class="grid grid-cols-1 gap-6">
 
-          {{#each this.fplApi.currentFantasyFixtures as |match|}}
+          {{#each this.gameWeekFantasyFixtures as |match|}}
 
             <li class="bg-purple border-t-4 border-lime text-white py-2 px-6">
 
@@ -64,86 +68,13 @@
 
       <div class="space-y-6">
 
-        <table
-          class="w-full border-t-4 border-yellow bg-purple text-white divide-y divide-white divide-opacity-20"
-        >
-          <thead class="">
-            <tr>
-              <th
-                scope="col"
-                class="hidden sm:block py-5 pl-4 pr-3 text-left text-sm font-semibold sm:pl-6 lg:pl-8 text-opacity-70"
-              >Rank</th>
-              <th
-                scope="col"
-                class="px-3 py-5 text-left text-sm font-semibold text-opacity-70"
-              >Team</th>
-              <th
-                scope="col"
-                class="hidden sm:block px-3 py-5 text-left text-sm font-semibold text-opacity-70"
-              >+/-</th>
-              <th
-                scope="col"
-                class="px-3 py-5 text-left text-sm font-semibold text-opacity-70"
-              >Points</th>
-              <th
-                scope="col"
-                class="px-3 py-5 text-sm font-semibold text-right text-opacity-70"
-              >Week</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-white divide-opacity-20">
-            {{#each this.fplApi.fantasyStandings as |standing|}}
+        <League::Table @standings={{this.fplApi.fantasyStandings}} />
 
-              <tr>
-                <td
-                  class="hidden sm:block whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium sm:pl-6 lg:pl-8"
-                >{{standing.last_rank}}</td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm">
-                  <h1
-                    class="font-bold text-lg md:text-2xl"
-                  >{{standing.team.entry_name}}</h1>
-                  <h2
-                    class="text-base md:text-xl opacity-70"
-                  >{{standing.team.player_first_name}}
-                    {{standing.team.player_last_name}}</h2>
-                </td>
-                <td
-                  class="whitespace-nowrap px-3 py-4 text-sm"
-                >{{standing.points_for}}</td>
-                <td
-                  class="hidden sm:block whitespace-nowrap px-3 py-4 text-sm"
-                >{{standing.total}}</td>
-                <td
-                  class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 lg:pr-8"
-                >+3</td>
-              </tr>
-            {{/each}}
-          </tbody>
-        </table>
+      </div>
 
-        <div
-          class="border-t-4 border-red bg-purple text-white grid grid-cols-4 p-6 items-center divide-y divide-white divide-opacity-20"
-        >
-          {{#each this.fplApi.proFixtures as |game|}}
+      <div class="space-y-6">
 
-            <div class="h-16 flex items-center py-2 opacity-70">{{moment-format
-                game.kickoff_time
-                "ddd Do"
-              }}</div>
-            <div
-              class="h-16 flex items-center py-2 text-left font-bold text-lg md:text-2xl"
-            >{{game.home.short_name}}</div>
-            <div
-              class="h-16 flex items-center py-2 text-center text-3xl font-bold"
-            >
-              {{game.score}}
-            </div>
-            <div
-              class="h-16 flex items-center py-2 text-right font-bold text-lg md:text-2xl"
-            >{{game.away.short_name}}</div>
-
-          {{/each}}
-        </div>
+        <Fixture::Table @fixtures={{this.gameWeekProFixtures}} />
 
       </div>
     </main>
