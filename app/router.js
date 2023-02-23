@@ -8,5 +8,4 @@ export default class Router extends EmberRouter {
 
 Router.map(function () {
   this.route('live');
-  this.route('retry');
 });
