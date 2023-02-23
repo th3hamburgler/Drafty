@@ -6,7 +6,7 @@
   {{/if}}
 </div>
 
-<div class="grid grid-cols-4 sm:grid-cols-8">
+<div class="grid grid-cols-4 md:grid-cols-8 gap-6">
 
   <div class="col-span-3">
     <Game::Fantasy::Fixture::Info
@@ -22,7 +22,7 @@
   />
 
   {{#if this.showDetails}}
-    <div class="col-span-4 sm:order-5 5 sm:mr-3">
+    <div class="col-span-4 md:order-5 5">
       <Game::Fantasy::Fixture::Players
         @match={{@match}}
         @picks={{@match.homePicks}}
@@ -30,7 +30,7 @@
     </div>
   {{/if}}
 
-  <div class="col-span-3 sm:text-right sm:order-4">
+  <div class="col-span-3 md:text-right md:order-4">
     <Game::Fantasy::Fixture::Info
       @win={{@match.awayWin}}
       @team={{@match.away}}
@@ -44,7 +44,7 @@
   />
 
   {{#if this.showDetails}}
-    <div class="col-span-4 sm:col-start-5 sm:ml-3 sm:order-6">
+    <div class="col-span-4 md:col-start-5 md:order-6">
       <Game::Fantasy::Fixture::Players
         @match={{@match}}
         @picks={{@match.awayPicks}}
