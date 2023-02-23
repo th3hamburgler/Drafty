@@ -12,7 +12,7 @@ module.exports = {
         purple: '#340040',
       },
       fontFamily: {
-        sans: '"Premier League W01"',
+        sans: '"Premier League W01", Helvetica, Arial, sans-serif',
       },
       gridColumn: {
         'span-13': 'span 13 / span 13',
