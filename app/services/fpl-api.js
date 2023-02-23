@@ -47,6 +47,7 @@ export default class FplApiService extends Service {
 
   @tracked pickId = 0;
   @tracked appearanceId = 0;
+  @tracked fixtureId = 0;
 
   // Getters
 
@@ -637,8 +638,10 @@ export default class FplApiService extends Service {
       return fixtures.map((fixture) => {
         const gameWeekId = fixture.event,
           homeId = fixture.league_entry_1,
-          awayId = fixture.league_entry_2,
-          id = `${gameWeekId}${homeId}${awayId}`;
+          awayId = fixture.league_entry_2;
+
+        this.fixtureId++;
+        const id = this.fixtureId;
 
         delete fixture.event;
         delete fixture.league_entry_1;
@@ -795,6 +798,17 @@ export default class FplApiService extends Service {
   gameWeekFantasyFixtures(gameWeek) {
     return this.fantasyFixtures.filter((f) => {
       return f.gameWeek.get('id') === gameWeek.id;
+    });
+  }
+
+  getSimilarFixtures(current) {
+    return this.store.peekAll('fantasy-fixture').filter((fixture) => {
+      return (
+        (current.get('home.id') == fixture.get('home.id') &&
+          current.get('away.id') == fixture.get('away.id')) ||
+        (current.get('home.id') == fixture.get('away.id') &&
+          current.get('away.id') == fixture.get('home.id'))
+      );
     });
   }
 }

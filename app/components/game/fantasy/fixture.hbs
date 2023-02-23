@@ -21,7 +21,7 @@
     @liveScore={{@match.homeLiveScore}}
   />
 
-  {{#if this.showDetails}}
+  {{#if (and @match.started this.showDetails)}}
     <div class="col-span-4 md:order-5 5">
       <Game::Fantasy::Fixture::Players
         @match={{@match}}
@@ -43,7 +43,7 @@
     @liveScore={{@match.awayLiveScore}}
   />
 
-  {{#if this.showDetails}}
+  {{#if (and @match.started this.showDetails)}}
     <div class="col-span-4 md:col-start-5 md:order-6">
       <Game::Fantasy::Fixture::Players
         @match={{@match}}
@@ -52,10 +52,24 @@
     </div>
   {{/if}}
 
+  {{#if (and (not @match.started) this.showDetails)}}
+    <div class="col-span-4 md:col-span-8 md:order-6">
+      <Game::Fantasy::Fixture::Analysis @match={{@match}} />
+    </div>
+  {{/if}}
+
 </div>
 
-<button
-  type="button"
-  class="block w-full text-center text-xs text-white opacity-60 mt-2"
-  {{on "click" this.toggleDetails}}
->{{if this.showDetails "Hide" "Show"}} Players</button>
+{{#if (and @match.started)}}
+  <button
+    type="button"
+    class="block w-full text-center text-xs text-white opacity-60 mt-2"
+    {{on "click" this.toggleDetails}}
+  >{{if this.showDetails "Hide" "Show"}} Players</button>
+{{else}}
+  <button
+    type="button"
+    class="block w-full text-center text-xs text-white opacity-60 mt-2"
+    {{on "click" this.toggleDetails}}
+  >{{if this.showDetails "Hide" "Show"}} Analysis</button>
+{{/if}}

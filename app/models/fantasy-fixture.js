@@ -97,4 +97,12 @@ export default class FantasyFixtureModel extends Model {
     });
     return score;
   }
+
+  get score() {
+    if (this.started) {
+      return `${this.league_entry_1_points} - ${this.league_entry_2_points}`;
+    } else {
+      return `- v -`;
+    }
+  }
 }
