@@ -4,12 +4,19 @@ import { tracked } from '@glimmer/tracking';
 import { task, all, waitForProperty, timeout } from 'ember-concurrency';
 import axios from 'axios';
 import config from 'drafty/config/environment';
+import ExponentialBackoffPolicy from 'ember-concurrency-retryable/policies/exponential-backoff';
+
+const backoffPolicy = new ExponentialBackoffPolicy({
+  multiplier: 1.5,
+  minDelay: 30,
+  maxDelay: 400,
+});
 
 const ACCESS_KEY = 'f9a0d214fd6ea502e71561e1117c5f0d',
   PROXY =
     config.environment === 'production'
       ? `https://api.scrapestack.com/scrape?access_key=${ACCESS_KEY}&url=`
-      : '',
+      : ``,
   DRAFT_API = `${PROXY}https://draft.premierleague.com/api`,
   FPL_API = `${PROXY}https://fantasy.premierleague.com/api`,
   LEAGUE_DETAILS_API = `${DRAFT_API}/league/46575/details`,
@@ -273,27 +280,35 @@ export default class FplApiService extends Service {
     }
   });
 
-  getTeamData = task(async (team, gameWeekId) => {
-    try {
-      // console.log('Task: getTeamData start');
+  getTeamData = task(
+    {
+      enqueue: true,
+      maxConcurrency: 3,
+      evented: true,
+      retryable: backoffPolicy,
+    },
+    async (team, gameWeekId) => {
+      try {
+        // console.log('Task: getTeamData start');
 
-      const url = PICKS.replace(':manager_id', team.entry_id).replace(
-        ':event_id',
-        gameWeekId
-      );
+        const url = PICKS.replace(':manager_id', team.entry_id).replace(
+          ':event_id',
+          gameWeekId
+        );
 
-      const result = await axios.get(url);
-      // console.log('Task: getTeamData resolve');
+        const result = await axios.get(url);
+        // console.log('Task: getTeamData resolve');
 
-      const gameWeek = this.store.peekRecord('game-week', gameWeekId);
-      const picks = this.normalizePicks(result.data, team, gameWeek);
-      this.fantasyPicks.addObjects(picks);
+        const gameWeek = this.store.peekRecord('game-week', gameWeekId);
+        const picks = this.normalizePicks(result.data, team, gameWeek);
+        this.fantasyPicks.addObjects(picks);
 
-      return true;
-    } catch (e) {
-      console.log(e);
+        return true;
+      } catch (e) {
+        console.log(e);
+      }
     }
-  });
+  );
 
   getTransactions = task(async (team, gameWeekId) => {
     try {
@@ -623,77 +638,81 @@ export default class FplApiService extends Service {
   }
 
   normalizePicks(payload, fantasyTeam, gameWeek) {
-    // console.log('normalizePicks' /*, fantasyTeam.entry_name, gameWeek.name*/);
+    try {
+      const picks = payload.picks.map((pick, index) => {
+        this.pickId++;
+        const id = this.pickId,
+          proPlayerId = parseInt(pick.element);
 
-    const picks = payload.picks.map((pick, index) => {
-      this.pickId++;
-      const id = this.pickId,
-        proPlayerId = parseInt(pick.element);
+        delete pick.element;
 
-      delete pick.element;
+        const player = this.store.peekRecord('pro-player', proPlayerId);
 
-      const player = this.store.peekRecord('pro-player', proPlayerId);
+        // const appearance = this.store.peekAll('appearance').find((app) => {
+        //   const id = parseInt(app.get('player.id')),
+        //     gw = parseInt(app.get('gameWeek.id'));
 
-      // const appearance = this.store.peekAll('appearance').find((app) => {
-      //   const id = parseInt(app.get('player.id')),
-      //     gw = parseInt(app.get('gameWeek.id'));
+        //   // find the appearance of this player on the given game week
+        //   return id === proPlayerId && gw === parseInt(gameWeek.id);
+        // });
 
-      //   // find the appearance of this player on the given game week
-      //   return id === proPlayerId && gw === parseInt(gameWeek.id);
-      // });
+        // assign a 0 multiplier to any subs when the game week began
+        // it looks like the draft api always assigns 1 to this property
+        if (index > 10) {
+          pick.multiplier = 0;
+          pick.started_on_bench = true;
+        } else {
+          pick.started_on_bench = false;
+        }
 
-      // assign a 0 multiplier to any subs when the game week began
-      // it looks like the draft api always assigns 1 to this property
-      if (index > 10) {
-        pick.multiplier = 0;
-        pick.started_on_bench = true;
-      } else {
-        pick.started_on_bench = false;
-      }
+        const model = this.store.push({
+          data: [
+            {
+              id: id,
+              type: 'fantasy-pick',
+              attributes: pick,
+              relationships: {},
+            },
+          ],
+        }).firstObject;
 
-      const model = this.store.push({
-        data: [
-          {
-            id: id,
-            type: 'fantasy-pick',
-            attributes: pick,
-            relationships: {},
-          },
-        ],
-      }).firstObject;
+        model.player = player;
+        model.team = fantasyTeam;
+        model.gameWeek = gameWeek;
+        // model.appearance = appearance;
+        // console.log('===', model.get('player.web_name'), appearance.id);
 
-      model.player = player;
-      model.team = fantasyTeam;
-      model.gameWeek = gameWeek;
-      // model.appearance = appearance;
-      // console.log('===', model.get('player.web_name'), appearance.id);
-
-      return model;
-    });
-
-    // Now we must loop through the subs data to see if any players
-    // were subbed into the team this week
-    payload.subs.forEach((s) => {
-      const playerIn = picks.find((p) => {
-        // console.log(p.get('player.id'), s.element_in);
-        return parseInt(p.get('player.id')) === parseInt(s.element_in);
-      });
-      const playerOut = picks.find((p) => {
-        // console.log(p.get('player.id'), s.element_out);
-        return parseInt(p.get('player.id')) === parseInt(s.element_out);
+        return model;
       });
 
-      // set player in multiplier to 1
-      if (playerIn) {
-        playerIn.multiplier = 1;
-      }
-      // set player out multipler to 0
-      if (playerOut) {
-        playerOut.multiplier = 0;
-      }
-    });
+      // Now we must loop through the subs data to see if any players
+      // were subbed into the team this week
+      payload.subs.forEach((s) => {
+        const playerIn = picks.find((p) => {
+          // console.log(p.get('player.id'), s.element_in);
+          return parseInt(p.get('player.id')) === parseInt(s.element_in);
+        });
+        const playerOut = picks.find((p) => {
+          // console.log(p.get('player.id'), s.element_out);
+          return parseInt(p.get('player.id')) === parseInt(s.element_out);
+        });
 
-    return picks;
+        // set player in multiplier to 1
+        if (playerIn) {
+          playerIn.multiplier = 1;
+        }
+        // set player out multipler to 0
+        if (playerOut) {
+          playerOut.multiplier = 0;
+        }
+      });
+
+      return picks;
+    } catch (e) {
+      throw new Error(
+        `Failed to parse picks for ${fantasyTeam.entry_name} for ${gameWeek.name}`
+      );
+    }
   }
 
   normalizeTransactions(transactions) {
