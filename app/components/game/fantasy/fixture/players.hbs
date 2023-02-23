@@ -16,14 +16,14 @@
           <table class="w-full text-gray-400">
 
             <tbody>
-              {{#each pick.player.appearances as |appearance|}}
-                {{#each appearance.pointsDescriptions as |desc|}}
-                  <tr>
-                    <td>{{desc.text}}</td>
-                    <td class="px-2 text-right">{{desc.points}}</td>
-                  </tr>
-                {{/each}}
+
+              {{#each pick.appearance.pointsDescriptions as |desc|}}
+                <tr>
+                  <td>{{desc.text}}</td>
+                  <td class="px-2 text-right">{{desc.points}}</td>
+                </tr>
               {{/each}}
+
             </tbody>
           </table>
 
@@ -31,7 +31,7 @@
         <td
           class="align-top py-2 text-center font-semibold text-xl whitespace-nowrap"
         >
-          {{pick.player.appearance.total_points}}
+          {{pick.appearance.total_points}}
         </td>
         <td class="align-top pl-2 pr-2 py-4">
           <div class="{{pick.appearance.color}} rounded-full h-2 w-2 my-0.5">

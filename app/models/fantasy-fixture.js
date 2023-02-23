@@ -1,5 +1,5 @@
 import Model, { attr, belongsTo } from '@ember-data/model';
-
+import { cached } from '@glimmer/tracking';
 export default class FantasyFixtureModel extends Model {
   // Attributes
 
@@ -46,19 +46,35 @@ export default class FantasyFixtureModel extends Model {
     }
   }
 
+  @cached
+  get homePicks() {
+    const gameWeekId = this.get('gameWeek.id');
+    return this.home.get('picks').filter((p) => {
+      return p.get('gameWeek.id') === gameWeekId;
+    });
+  }
+
+  @cached
+  get awayPicks() {
+    const gameWeekId = this.get('gameWeek.id');
+    return this.away.get('picks').filter((p) => {
+      return p.get('gameWeek.id') === gameWeekId;
+    });
+  }
+
   get homeLiveScore() {
     let score = 0;
     // console.log(this.home.short_name);
-    this.home.get('picks').forEach((p, i) => {
+    this.homePicks.forEach((p, i) => {
       if (i < 11) {
-        console.log(
-          p.get('player.web_name'),
-          p.multiplier,
-          p.multiplier * p.get('appearance.total_points')
-        );
+        // console.log(
+        //   p.get('player.web_name'),
+        //   p.multiplier,
+        //   p.multiplier * p.get('appearance.total_points')
+        // );
         score += p.multiplier * p.get('appearance.total_points');
       } else {
-        console.log(p.get('player.web_name'));
+        // console.log(p.get('player.web_name'));
       }
     });
     return score;
@@ -67,16 +83,16 @@ export default class FantasyFixtureModel extends Model {
   get awayLiveScore() {
     let score = 0;
     // console.log(this.away.short_name);
-    this.away.get('picks').forEach((p, i) => {
+    this.awayPicks.forEach((p, i) => {
       if (i < 11) {
-        console.log(
-          p.get('player.web_name'),
-          p.multiplier,
-          p.multiplier * p.get('appearance.total_points')
-        );
+        // console.log(
+        //   p.get('player.web_name'),
+        //   p.multiplier,
+        //   p.multiplier * p.get('appearance.total_points')
+        // );
         score += p.multiplier * p.get('appearance.total_points');
       } else {
-        console.log(p.get('player.web_name'));
+        // console.log(p.get('player.web_name'));
       }
     });
     return score;

@@ -24,7 +24,11 @@ export default class IndexController extends Controller {
       asleep = this.fplApi.asleep,
       tinkerMan = this.fplApi.tinkerMan,
       benchWarmer = this.fplApi.benchWarmer,
-      changingRoom = this.fplApi.changingRoom;
+      changingRoom = this.fplApi.changingRoom,
+      goal = this.fplApi.cantBuyAGoal,
+      wastedKeeper = this.fplApi.wastedKeeper,
+      cleanSheets = this.fplApi.cleanSheets,
+      loyal = this.fplApi.loyal;
 
     return [
       {
@@ -73,7 +77,6 @@ export default class IndexController extends Controller {
         color: 'cyan',
       },
       {
-        // todo
         title: 'Bench Warmer',
         icon: 'bench',
         manager: benchWarmer.get('fullName'),
@@ -84,7 +87,6 @@ export default class IndexController extends Controller {
         color: 'red',
       },
       {
-        // todo
         title: 'Lost the Changing Room',
         icon: 'boxing',
         manager: changingRoom.get('fullName'),
@@ -94,11 +96,36 @@ export default class IndexController extends Controller {
         ),
         color: 'lime',
       },
-      // best defence (most points)
-      // worst forward line
-      // waste of a good keeper
-      // saved by the subs
-      // good draft - most amount of original squad
+      {
+        title: 'Loyal to a Fault?',
+        icon: 'heart',
+        manager: loyal.get('fullName'),
+        value:
+          pluralize(loyal.get('numberOfOriginalSquadPlayers'), 'player') +
+          ' from original draft',
+        color: 'lime',
+      },
+      {
+        title: 'Can`t buy a goal',
+        icon: '',
+        manager: goal.get('fullName'),
+        value: pluralize(goal.get('totalTeamGoals'), 'goal'),
+        color: 'yellow',
+      },
+      {
+        title: 'Wasted Keeper',
+        icon: '',
+        manager: wastedKeeper.get('fullName'),
+        value: pluralize(wastedKeeper.get('wastedKeeperPoints'), 'pt'),
+        color: 'cyan',
+      },
+      {
+        title: 'Dry Sheets',
+        icon: '',
+        manager: cleanSheets.get('fullName'),
+        value: pluralize(cleanSheets.get('totalCleanSheets'), 'clean sheet'),
+        color: 'red',
+      },
     ];
   }
 }

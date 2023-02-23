@@ -40,27 +40,29 @@ export default class AppearanceModel extends Model {
   // Getters
   get pointsDescriptions() {
     const str = [];
-    this.explain.forEach((e) => {
-      if (e.stat === 'minutes') {
-        if (e.points !== 0) {
-          str.pushObject({ text: `${e.value} mins`, points: e.points });
+    if (this.explain) {
+      this.explain.forEach((e) => {
+        if (e.stat === 'minutes') {
+          if (e.points !== 0) {
+            str.pushObject({ text: `${e.value} mins`, points: e.points });
+          } else {
+            str.pushObject({ text: `did not play` });
+          }
         } else {
-          str.pushObject({ text: `did not play` });
+          if (e.stat === 'goals_conceded') {
+            str.pushObject({
+              text: `${e.value} goals conceded`,
+              points: e.points,
+            });
+          } else {
+            return str.pushObject({
+              text: `${pluralize(e.value, singularize(e.name)).toLowerCase()}`,
+              points: e.points,
+            });
+          }
         }
-      } else {
-        if (e.stat === 'goals_conceded') {
-          str.pushObject({
-            text: `${e.value} goals conceded`,
-            points: e.points,
-          });
-        } else {
-          return str.pushObject({
-            text: `${pluralize(e.value, singularize(e.name)).toLowerCase()}`,
-            points: e.points,
-          });
-        }
-      }
-    });
+      });
+    }
 
     if (str.length === 0) {
       return ['Did not play'];

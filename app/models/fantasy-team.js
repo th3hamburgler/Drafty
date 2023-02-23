@@ -64,4 +64,106 @@ export default class FantasyTeamModel extends Model {
     });
     return points;
   }
+
+  @cached
+  get totalTeamGoals() {
+    let goals = 0;
+
+    this.picks.forEach((p) => {
+      if (p.multiplier !== 0) {
+        const goalsScored = p.get('appearance.goals_scored');
+
+        if (goalsScored) {
+          goals += goalsScored;
+        }
+      }
+    });
+    return goals;
+  }
+
+  @cached get wastedKeeperPoints() {
+    let points = 0;
+
+    this.picks.forEach((p) => {
+      const position = p.get('player.position.singular_name_short');
+      if (p.multiplier === 0 && position === 'GKP') {
+        const gkPoints = p.get('appearance.total_points');
+
+        if (gkPoints) {
+          points += gkPoints;
+        }
+      }
+    });
+    return points;
+  }
+
+  @cached
+  get totalCleanSheets() {
+    let cleanSheets = 0;
+
+    this.picks.forEach((p) => {
+      const position = p.get('player.position.singular_name_short');
+
+      if (p.multiplier === 1 && (position === 'GKP' || position === 'DEF')) {
+        const playerCleanSheets = p.get('appearance.clean_sheets');
+
+        if (playerCleanSheets) {
+          cleanSheets += playerCleanSheets;
+        }
+      }
+    });
+    return cleanSheets;
+  }
+
+  @cached
+  get numberOfOriginalSquadPlayers() {
+    // group picks by game week
+    const picks = this.groupPicksByGameWeek(this.picks),
+      gameWeeks = Object.keys(picks),
+      firstGameWeek = gameWeeks.firstObject,
+      lastGameWeek = gameWeeks.lastObject,
+      originalPlayers = this.getMatchingPicks(
+        picks[firstGameWeek],
+        picks[lastGameWeek]
+      );
+
+    return originalPlayers.length;
+  }
+
+  // Methods
+  groupPicksByGameWeek(picks) {
+    const groupedPicks = {};
+
+    // Iterate through each pick in the array
+    picks.forEach((pick) => {
+      const gameWeekId = pick.get('gameWeek.id');
+      // If the gameWeek id doesn't exist in the groupedPicks object, create it
+      if (!groupedPicks[gameWeekId]) {
+        groupedPicks[gameWeekId] = [];
+      }
+
+      // Add the pick to the array for its corresponding gameWeek id
+      groupedPicks[gameWeekId].push(pick);
+    });
+
+    return groupedPicks;
+  }
+
+  getMatchingPicks(picks1, picks2) {
+    const matchingPicks = [];
+
+    // Iterate through each pick in the first array
+    picks1.forEach((pick1) => {
+      // Check if there is a matching pick in the second array
+      const matchingPick = picks2.find(
+        (pick2) => pick1.get('player.id') === pick2.get('player.id')
+      );
+      if (matchingPick) {
+        // If there is a matching pick, add it to the matchingPicks array
+        matchingPicks.push(pick1);
+      }
+    });
+
+    return matchingPicks;
+  }
 }

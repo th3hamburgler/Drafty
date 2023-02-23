@@ -137,6 +137,33 @@ export default class FplApiService extends Service {
     return this.fantasyStandings.toArray().sortBy('points_against').firstObject;
   }
 
+  get cantBuyAGoal() {
+    return this.fantasyTeams.toArray().sortBy('totalTeamGoals').firstObject;
+  }
+
+  get wastedKeeper() {
+    return this.fantasyTeams.toArray().sortBy('wastedKeeperPoints').lastObject;
+  }
+
+  get cleanSheets() {
+    return this.fantasyTeams.toArray().sortBy('totalCleanSheets').lastObject;
+  }
+
+  get loyal() {
+    // const teams = [];
+    // this.fantasyTeams.toArray().forEach((t) => {
+    //   teams.pushObject({
+    //     name: t.entry_name,
+    //     players: t.numberOfOriginalSquadPlayers,
+    //   });
+    // });
+
+    // console.table(teams);
+
+    return this.fantasyTeams.toArray().sortBy('numberOfOriginalSquadPlayers')
+      .lastObject;
+  }
+
   // Tasks
 
   bootstrap = task(async () => {
@@ -597,6 +624,9 @@ export default class FplApiService extends Service {
       // it looks like the draft api always assigns 1 to this property
       if (index > 10) {
         pick.multiplier = 0;
+        pick.started_on_bench = true;
+      } else {
+        pick.started_on_bench = false;
       }
 
       const model = this.store.push({

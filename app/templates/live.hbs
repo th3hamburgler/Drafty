@@ -32,7 +32,7 @@
           <div class="hidden sm:block">
             <p class="text-sm">
               Game Week
-              {{this.model.currentGameWeek.id}}
+              {{this.fplApi.currentGameWeek.id}}
             </p>
           </div>
           <div class="flex flex-1 justify-between sm:justify-end">
@@ -49,7 +49,7 @@
 
         <ul class="grid grid-cols-1 gap-6">
 
-          {{#each this.model.currentFantasyFixtures as |match|}}
+          {{#each this.fplApi.currentFantasyFixtures as |match|}}
 
             <li class="bg-purple border-t-4 border-lime text-white py-2 px-6">
 
@@ -92,7 +92,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-white divide-opacity-20">
-            {{#each this.model.fantasyStandings as |standing|}}
+            {{#each this.fplApi.fantasyStandings as |standing|}}
 
               <tr>
                 <td
@@ -124,7 +124,7 @@
         <div
           class="border-t-4 border-red bg-purple text-white grid grid-cols-4 p-6 items-center divide-y divide-white divide-opacity-20"
         >
-          {{#each this.model.proFixtures as |game|}}
+          {{#each this.fplApi.proFixtures as |game|}}
 
             <div class="h-16 flex items-center py-2 opacity-70">{{moment-format
                 game.kickoff_time
