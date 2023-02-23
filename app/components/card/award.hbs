@@ -1,7 +1,13 @@
 <div
   class="relative flex flex-col items-center gap-2 text-white bg-purple rounded-sm p-6 border-t-4 border-{{@color}}"
+  role="button"
+  {{on "click" @showMore}}
+  ...attributes
 >
-  <h1 class="text-center text-lg font-bold uppercase px-6">{{@title}}</h1>
+  <h1
+    role="presentation"
+    class="text-center text-lg font-bold uppercase px-6"
+  >{{@title}}</h1>
 
   <div class="flex-1"></div>
 
@@ -12,13 +18,13 @@
     }}
   </div>
 
-  <h2 class="text-xl font-bold">{{@manager}}</h2>
+  <h2 role="presentation" class="text-xl font-bold">{{@manager}}</h2>
 
-  <h3 class="text-{{@color}} text-sm">{{@value}}</h3>
+  <h3 role="presentation" class="text-{{@color}} text-sm">{{@value}}</h3>
 
-  <button class="absolute top-6 right-6" type="button" {{on "click" @showMore}}>
+  <div class="absolute top-6 right-6">
     {{svg-jar "outline.information-circle" class="w-6 h-6  opacity-50"}}
-  </button>
+  </div>
 </div>
 {{! 
 text-cyan

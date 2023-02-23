@@ -12,12 +12,14 @@ export default class IndexController extends Controller {
 
   @tracked awardModal = null;
   @tracked showModal = false;
+  @tracked modalColor = 'cyan';
 
   // Action
 
   @action showAwardModal(value) {
     this.awardModal = value;
     this.showModal = true;
+    this.modalColor = this.colors[value] ? this.colors[value] : 'cyan';
   }
 
   @action closeAwardModal() {
@@ -28,6 +30,23 @@ export default class IndexController extends Controller {
 
   get loading() {
     return this.fplApi.bootstrap.isRunning;
+  }
+
+  get colors() {
+    return {
+      leader: 'cyan',
+      spoon: 'red',
+      'lucky-man': 'lime',
+      'flat-track-bully': 'yellow',
+      'tinker-man': 'cyan',
+      'bench-warmer': 'red',
+      'changing-room': 'lime',
+      asleep: 'yellow',
+      'wasted-keeper': 'cyan',
+      'the-wall': 'red',
+      loyal: 'lime',
+      goal: 'yellow',
+    };
   }
 
   get awards() {
@@ -56,6 +75,7 @@ export default class IndexController extends Controller {
         value: pluralize(leader.get('total'), 'pt'),
         color: 'cyan',
         type: 'leader',
+        classes: 'cyan',
       },
       {
         title: 'Woodenspoon',
@@ -64,6 +84,7 @@ export default class IndexController extends Controller {
         value: pluralize(looser.get('total'), 'pt'),
         color: 'red',
         type: 'spoon',
+        classes: 'red',
       },
       {
         title: 'Lucky Man',
@@ -73,6 +94,7 @@ export default class IndexController extends Controller {
           pluralize(luckyMan.get('pointsAgainstPerGame'), 'pt') + ' against',
         color: 'lime',
         type: 'lucky-man',
+        classes: 'lime',
       },
       {
         title: 'Flat-track Bully',
@@ -84,14 +106,7 @@ export default class IndexController extends Controller {
         )} victory`,
         color: 'yellow',
         type: 'flat-track-bully',
-      },
-      {
-        title: 'Asleep at the wheel',
-        icon: 'steering-wheel',
-        manager: asleep.get('team.fullName'),
-        value: pluralize(asleep.get('team.totalTransactions'), 'transfer'),
-        color: 'yellow',
-        type: 'asleep',
+        classes: 'yellow',
       },
       {
         title: 'The Tinker Man',
@@ -100,6 +115,7 @@ export default class IndexController extends Controller {
         value: pluralize(tinkerMan.get('team.totalTransactions'), 'transfer'),
         color: 'cyan',
         type: 'tinker-man',
+        classes: 'cyan',
       },
       {
         title: 'Bench Warmer',
@@ -111,6 +127,7 @@ export default class IndexController extends Controller {
         )} left on the bench`,
         color: 'red',
         type: 'bench-warmer',
+        classes: 'red',
       },
       {
         title: 'Lost the Changing Room',
@@ -122,24 +139,16 @@ export default class IndexController extends Controller {
         ),
         color: 'lime',
         type: 'changing-room',
+        classes: 'lime',
       },
       {
-        title: 'Loyal to a Fault?',
-        icon: 'heart',
-        manager: loyal.get('fullName'),
-        value:
-          pluralize(loyal.get('numberOfOriginalSquadPlayers'), 'player') +
-          ' from original draft',
-        color: 'lime',
-        type: 'loyal',
-      },
-      {
-        title: 'Can`t buy a goal',
-        icon: 'currency-pound',
-        manager: goal.get('fullName'),
-        value: `${pluralize(goal.get('totalTeamGoals'), 'goal')} scored`,
+        title: 'Asleep at the wheel',
+        icon: 'steering-wheel',
+        manager: asleep.get('team.fullName'),
+        value: pluralize(asleep.get('team.totalTransactions'), 'transfer'),
         color: 'yellow',
-        type: 'goal',
+        type: 'asleep',
+        classes: 'yellow',
       },
       {
         title: 'Wasted Keeper',
@@ -151,6 +160,7 @@ export default class IndexController extends Controller {
         )} backup keeper`,
         color: 'cyan',
         type: 'wasted-keeper',
+        classes: 'cyan',
       },
       {
         title: 'The Wall',
@@ -159,6 +169,27 @@ export default class IndexController extends Controller {
         value: pluralize(theWall.get('totalCleanSheets'), 'clean sheet'),
         color: 'red',
         type: 'the-wall',
+        classes: 'red',
+      },
+      {
+        title: 'Loyal to a Fault?',
+        icon: 'heart',
+        manager: loyal.get('fullName'),
+        value:
+          pluralize(loyal.get('numberOfOriginalSquadPlayers'), 'player') +
+          ' from original draft',
+        color: 'lime',
+        type: 'loyal',
+        classes: 'lime',
+      },
+      {
+        title: 'Can`t buy a goal',
+        icon: 'currency-pound',
+        manager: goal.get('fullName'),
+        value: `${pluralize(goal.get('totalTeamGoals'), 'goal')} scored`,
+        color: 'yellow',
+        type: 'goal',
+        classes: 'yellow',
       },
     ];
   }

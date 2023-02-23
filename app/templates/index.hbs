@@ -20,7 +20,9 @@
 
   {{else}}
 
-    <main class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 m-6 gap-6">
+    <main
+      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 m-6 gap-6"
+    >
 
       {{#each this.awards as |award|}}
         <Card::Award
@@ -35,7 +37,12 @@
 
     </main>
 
-    <Modal @show={{this.showModal}} @close={{this.closeAwardModal}}>
+    <Modal
+      @show={{this.showModal}}
+      @close={{this.closeAwardModal}}
+      @color={{this.modalColor}}
+    >
+      {{! Tailwind Cache Buster: ring-cyan ring-yellow ring-lime ring-red }}
 
       {{#if (eq this.awardModal "leader")}}
 
