@@ -8,6 +8,8 @@ export default class FantasyPickModel extends Model {
   @attr('number') multiplier; // 1 in team / 0 on bench
   @attr('number') position;
   @attr('boolean') started_on_bench;
+  @attr('boolean') subbed_on;
+  @attr('boolean') subbed_off;
 
   // Relationships
 
