@@ -6,6 +6,7 @@ const APPEARANCE_STATUS = {
   PLAYED: 'played',
   BENCHED: 'benched',
   PLAYING: 'playing',
+  NONE: 'none',
 };
 export default class AppearanceModel extends Model {
   // Attributes
@@ -97,6 +98,8 @@ export default class AppearanceModel extends Model {
     } else if (this.gameStarted && this.minutes === 0) {
       // did not play
       return APPEARANCE_STATUS.BENCHED;
+    } else if (this.hasNoGames) {
+      return APPEARANCE_STATUS.NONE;
     } else {
       return APPEARANCE_STATUS.PLAYING;
     }
@@ -112,6 +115,8 @@ export default class AppearanceModel extends Model {
         return 'bg-red';
       case APPEARANCE_STATUS.PLAYING:
         return 'bg-yellow';
+      case APPEARANCE_STATUS.NONE:
+        return 'bg-black opacity-30';
     }
   }
 
@@ -124,11 +129,19 @@ export default class AppearanceModel extends Model {
       case APPEARANCE_STATUS.BENCHED:
         return `${this.player.get('web_name')} was benched`;
       case APPEARANCE_STATUS.PLAYING:
-        return `${this.player.get('web_name')} currently playing`;
+        return `${this.player.get('web_name')} is playing`;
+      case APPEARANCE_STATUS.NONE:
+        return `${this.player.get('web_name')} has no games`;
     }
   }
 
+  get hasNoGames() {
+    return this.fixtures.length === 0;
+  }
   get gameNotStarted() {
+    if (this.hasNoGames) {
+      return false;
+    }
     // return true if any of the fixtures linked to this appearance have not started yet
     return this.fixtures.any((f) => {
       return !f.started;
@@ -136,12 +149,18 @@ export default class AppearanceModel extends Model {
   }
 
   get gameStarted() {
+    if (this.hasNoGames) {
+      return false;
+    }
     return this.fixtures.any((f) => {
       return f.started;
     });
   }
 
   get gameNotFinished() {
+    if (this.hasNoGames) {
+      return false;
+    }
     // return true if any of the fixtures linked to this appearance have not finished yet
     return this.fixtures.any((f) => {
       return !f.finished;
@@ -149,6 +168,9 @@ export default class AppearanceModel extends Model {
   }
 
   get gamesFinished() {
+    if (this.hasNoGames) {
+      return false;
+    }
     // true if all fixtures this game week have finished
     return this.fixtures.every((f) => {
       return f.finished;

@@ -3,9 +3,7 @@
 >{{@team.entry_name}}</h1>
 <h2 class="text-base md:text-lg">{{@team.player_first_name}}
   {{@team.player_last_name}}</h2>
-<div
-  class="mt-3 mb-6 sm:mb-0 grid grid-cols-15 w-full rounded-sm divide-x divide-white divide-opacity-50"
->
+<div class="mt-3 mb-6 sm:mb-0 grid grid-cols-15 w-full rounded-sm">
   {{#each @picks as |pick|}}
     <div class="h-2 {{pick.appearance.color}}">
       <EmberTooltip @text={{pick.appearance.description}} />
