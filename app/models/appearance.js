@@ -38,6 +38,16 @@ export default class AppearanceModel extends Model {
   @belongsTo('game-week') gameWeek;
 
   // Getters
+
+  get canBeSubbedOut() {
+    // will return true if this player can be subbed out of a fantasy team
+    return this.finished && this.minutes === 0;
+  }
+  get canBeSubbedIn() {
+    // will return true if this player can be subbed in to a fantasy team
+    return this.finished && this.minutes > 0;
+  }
+
   get pointsDescriptions() {
     const str = [];
     if (this.explain) {

@@ -9,6 +9,8 @@ export default class FantasyPickModel extends Model {
   @attr('number') position;
   @attr('boolean') started_on_bench;
 
+  // Relationships
+
   @belongsTo('pro-player') player;
   @belongsTo('fantasy-team') team;
   @belongsTo('game-week') gameWeek;

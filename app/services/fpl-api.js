@@ -20,7 +20,7 @@ const ACCESS_KEY = 'f9a0d214fd6ea502e71561e1117c5f0d',
   PROXY =
     config.environment === 'production'
       ? `https://api.scrapestack.com/scrape?access_key=${ACCESS_KEY}&url=`
-      : `https://api.scrapestack.com/scrape?access_key=${ACCESS_KEY}&url=`,
+      : ``,
   DRAFT_API = `${PROXY}https://draft.premierleague.com/api`,
   FPL_API = `${PROXY}https://fantasy.premierleague.com/api`,
   LEAGUE_DETAILS_API = `${DRAFT_API}/league/46575/details`,
