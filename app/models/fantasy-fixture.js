@@ -61,6 +61,7 @@ export default class FantasyFixtureModel extends Model {
     });
   }
 
+  @cached
   get liveHomePicks() {
     try {
       const gameWeekId = this.get('gameWeek.id');
@@ -70,7 +71,22 @@ export default class FantasyFixtureModel extends Model {
         return p.get('gameWeek.id') === gameWeekId;
       });
 
-      return this.livePicks(picks);
+      picks = this.livePicks(picks);
+
+      // if (this.get('home.entry_name') === 'Bang Average V') {
+      //   console.table(
+      //     picks.map((p) => {
+      //       return {
+      //         player: p.get('player.web_name'),
+      //         position: p.get('player.position.singular_name_short'),
+      //         points: p.get('appearance.total_points'),
+      //         subbed_off: p.subbed_off,
+      //         subbed_on: p.subbed_on,
+      //       };
+      //     })
+      //   );
+      // }
+      return picks;
     } catch (e) {
       console.log(e);
     }
@@ -84,6 +100,7 @@ export default class FantasyFixtureModel extends Model {
     });
   }
 
+  @cached
   get liveAwayPicks() {
     try {
       const gameWeekId = this.get('gameWeek.id');
@@ -93,7 +110,9 @@ export default class FantasyFixtureModel extends Model {
         return p.get('gameWeek.id') === gameWeekId;
       });
 
-      return this.livePicks(picks);
+      picks = this.livePicks(picks);
+
+      return picks;
     } catch (e) {
       console.log(e);
     }
@@ -260,7 +279,10 @@ export default class FantasyFixtureModel extends Model {
       }
       // its possible that you have 2 midfielders on the bench and 2 who have not started on the pitch
       // we'll check again for the second sub
-      if (groupedCanBeSubbedOut.get('MID').length > 1) {
+      if (
+        groupedCanBeSubbedOut.get('MID').length > 1 &&
+        groupedCanBeSubbedIn.get('MID').length > 1
+      ) {
         const pout = groupedCanBeSubbedOut.get('MID')[1],
           pin = groupedCanBeSubbedIn.get('MID')[1];
 
@@ -354,6 +376,17 @@ export default class FantasyFixtureModel extends Model {
   }
 
   canBeSubbedOut(firstEleven) {
+    // if (this.get('home.entry_name') === 'Bang Average V') {
+    //   console.table(
+    //     firstEleven.map((p) => {
+    //       return {
+    //         player: p.get('player.web_name'),
+    //         canBeSubbedOut: p.get('appearance.canBeSubbedOut'),
+    //       };
+    //     })
+    //   );
+    // }
+
     return firstEleven.filterBy('appearance.canBeSubbedOut', true);
   }
 

@@ -20,7 +20,7 @@ const ACCESS_KEY = 'f9a0d214fd6ea502e71561e1117c5f0d',
   PROXY =
     config.environment === 'production'
       ? `https://api.scrapestack.com/scrape?access_key=${ACCESS_KEY}&url=`
-      : ``,
+      : `https://api.scrapestack.com/scrape?access_key=${ACCESS_KEY}&url=`,
   DRAFT_API = `${PROXY}https://draft.premierleague.com/api`,
   FPL_API = `${PROXY}https://fantasy.premierleague.com/api`,
   LEAGUE_DETAILS_API = `${DRAFT_API}/league/46575/details`,
@@ -601,6 +601,11 @@ export default class FplApiService extends Service {
         this.store.peekAll('fantasy-pick')
       );
 
+      // do the same with pro fixtures
+      const gameWeekFixtures = this.store.peekAll('pro-fixture').filter((f) => {
+        return f.get('gameWeek.id') === gameWeekId;
+      });
+
       Object.keys(payload.elements).forEach((playerId) => {
         const appearances = [payload.elements[playerId]];
 
@@ -611,20 +616,19 @@ export default class FplApiService extends Service {
 
           const pick = picks[gameWeekId][playerId];
 
-          // const pick = this.store.peekAll('fantasy-pick').find((p) => {
-          //   const id = parseInt(p.get('player.id')),
-          //     gw = parseInt(p.get('gameWeek.id'));
-
-          //   // find the pick of this player on the given game week
-          //   return id === parseInt(playerId) && gw === parseInt(gameWeekId);
-          // });
-
           if (pick) {
             this.appearanceId++;
             const id = this.appearanceId;
 
             const player = this.store.peekRecord('pro-player', playerId);
             const gameWeek = this.store.peekRecord('game-week', gameWeekId);
+            const fixtures = gameWeekFixtures.filter((f) => {
+              // check if this teams player is involved
+              return (
+                f.get('home.id') === player.get('team.id') ||
+                f.get('away.id') === player.get('team.id')
+              );
+            });
 
             const model = this.store.push({
               data: [
@@ -643,6 +647,7 @@ export default class FplApiService extends Service {
 
             model.gameWeek = gameWeek;
             model.pick = pick;
+            model.fixtures = fixtures;
 
             allAppearances.pushObject(model);
           }

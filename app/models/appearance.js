@@ -1,4 +1,4 @@
-import Model, { attr, belongsTo } from '@ember-data/model';
+import Model, { attr, belongsTo, hasMany } from '@ember-data/model';
 import { singularize, pluralize } from 'ember-inflector';
 
 const APPEARANCE_STATUS = {
@@ -36,16 +36,20 @@ export default class AppearanceModel extends Model {
   @belongsTo('pro-player') player;
   @belongsTo('fantasy-pick') pick;
   @belongsTo('game-week') gameWeek;
+  @hasMany('pro-fixture') fixtures;
 
   // Getters
 
   get canBeSubbedOut() {
+    // console.log('canBeSubbedOut', this.finished, this.minutes);
     // will return true if this player can be subbed out of a fantasy team
-    return this.finished && this.minutes === 0;
+    // return this.finished && this.minutes === 0;
+    return this.minutes === 0;
   }
   get canBeSubbedIn() {
     // will return true if this player can be subbed in to a fantasy team
-    return this.finished && this.minutes > 0;
+    // return this.finished && this.minutes > 0;
+    return this.minutes > 0;
   }
 
   get pointsDescriptions() {
@@ -82,15 +86,15 @@ export default class AppearanceModel extends Model {
   }
 
   get status() {
-    const fixture = this.player.get('team.fixture');
+    const fixture = this.get('fixture');
 
-    if (!fixture.started) {
+    if (this.gameNotStarted) {
       // game not started
       return APPEARANCE_STATUS.PENDING;
-    } else if (this.minutes > 0 && fixture.finished) {
+    } else if (this.minutes > 0 && this.gamesFinished) {
       // played
       return APPEARANCE_STATUS.PLAYED;
-    } else if (fixture.started && this.minutes === 0) {
+    } else if (this.gameStarted && this.minutes === 0) {
       // did not play
       return APPEARANCE_STATUS.BENCHED;
     } else {
@@ -122,5 +126,32 @@ export default class AppearanceModel extends Model {
       case APPEARANCE_STATUS.PLAYING:
         return `${this.player.get('web_name')} currently playing`;
     }
+  }
+
+  get gameNotStarted() {
+    // return true if any of the fixtures linked to this appearance have not started yet
+    return this.fixtures.any((f) => {
+      return !f.started;
+    });
+  }
+
+  get gameStarted() {
+    return this.fixtures.any((f) => {
+      return f.started;
+    });
+  }
+
+  get gameNotFinished() {
+    // return true if any of the fixtures linked to this appearance have not finished yet
+    return this.fixtures.any((f) => {
+      return !f.finished;
+    });
+  }
+
+  get gamesFinished() {
+    // true if all fixtures this game week have finished
+    return this.fixtures.every((f) => {
+      return f.finished;
+    });
   }
 }

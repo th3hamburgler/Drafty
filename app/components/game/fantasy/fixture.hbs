@@ -25,7 +25,7 @@
     <div class="col-span-4 md:order-5 5">
       <Game::Fantasy::Fixture::Players
         @match={{@match}}
-        @picks={{@match.homePicks}}
+        @picks={{@match.liveHomePicks}}
       />
     </div>
   {{/if}}
@@ -34,7 +34,7 @@
     <Game::Fantasy::Fixture::Info
       @win={{@match.awayWin}}
       @team={{@match.away}}
-      @picks={{@match.awayPicks}}
+      @picks={{@match.liveAwayPicks}}
     />
   </div>
 
@@ -47,7 +47,7 @@
     <div class="col-span-4 md:col-start-5 md:order-6">
       <Game::Fantasy::Fixture::Players
         @match={{@match}}
-        @picks={{@match.awayPicks}}
+        @picks={{@match.liveAwayPicks}}
       />
     </div>
   {{/if}}

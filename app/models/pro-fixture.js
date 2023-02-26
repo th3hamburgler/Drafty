@@ -1,4 +1,4 @@
-import Model, { attr, belongsTo } from '@ember-data/model';
+import Model, { attr, belongsTo, hasMany } from '@ember-data/model';
 
 export default class ProFixtureModel extends Model {
   // Attributes
@@ -21,6 +21,7 @@ export default class ProFixtureModel extends Model {
   @belongsTo('pro_team') home;
   @belongsTo('pro_team') away;
   @belongsTo('game-week') gameWeek;
+  @hasMany('appearance') appearances;
 
   // Getters
 

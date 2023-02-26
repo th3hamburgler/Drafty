@@ -1,13 +1,19 @@
 <table class="w-full text-xs">
   <tbody>
-    {{#each @picks as |pick|}}
+    {{#each @picks as |pick index|}}
       <tr
-        class="{{if (gt pick.position 11) 'bg-black bg-opacity-20 ' ''}}
+        class="{{if (gt index 10) 'bg-black bg-opacity-20 ' ''}}
           border-b border-white border-opacity-20"
       >
-        <td
-          class="align-top pl-2 py-4 text-left"
-        >{{pick.player.position.singular_name_short}}</td>
+        <td class="align-top pl-2 py-4 text-left">
+          <div>{{pick.player.position.singular_name_short}}</div>
+          {{#if pick.subbed_on}}
+            {{svg-jar "arrows-up-down" class="w-4 text-xs opacity-30"}}
+          {{/if}}
+          {{#if pick.subbed_off}}
+            {{svg-jar "arrows-up-down" class="w-4 text-xs opacity-30"}}
+          {{/if}}
+        </td>
         <td class="align-top py-2 text-left w-full pl-2">
           <h1 class="text-base lg:text-xl">{{pick.player.web_name}}</h1>
           <h2 class="opacity-30">{{pick.player.team.short_name}}</h2>
