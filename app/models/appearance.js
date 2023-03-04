@@ -45,8 +45,11 @@ export default class AppearanceModel extends Model {
     // console.log('canBeSubbedOut', this.finished, this.minutes);
     // will return true if this player can be subbed out of a fantasy team
     // return this.finished && this.minutes === 0;
-    return this.minutes === 0;
+    const status = this.status;
+
+    return this.minutes === 0 && this.gamesFinished;
   }
+
   get canBeSubbedIn() {
     // will return true if this player can be subbed in to a fantasy team
     // return this.finished && this.minutes > 0;
@@ -56,10 +59,17 @@ export default class AppearanceModel extends Model {
   get pointsDescriptions() {
     const str = [];
     if (this.explain) {
+      const status = this.status;
       this.explain.forEach((e) => {
         if (e.stat === 'minutes') {
           if (e.points !== 0) {
             str.pushObject({ text: `${e.value} mins`, points: e.points });
+          } else if (status === APPEARANCE_STATUS.PENDING) {
+            str.pushObject({ text: `game pending` });
+          } else if (status === APPEARANCE_STATUS.BENCHED) {
+            str.pushObject({ text: `not started` });
+          } else if (status === APPEARANCE_STATUS.PLAYING) {
+            str.pushObject({ text: `game underway` });
           } else {
             str.pushObject({ text: `did not play` });
           }
@@ -138,6 +148,7 @@ export default class AppearanceModel extends Model {
   get hasNoGames() {
     return this.fixtures.length === 0;
   }
+
   get gameNotStarted() {
     if (this.hasNoGames) {
       return false;
@@ -169,7 +180,7 @@ export default class AppearanceModel extends Model {
 
   get gamesFinished() {
     if (this.hasNoGames) {
-      return false;
+      return true;
     }
     // true if all fixtures this game week have finished
     return this.fixtures.every((f) => {

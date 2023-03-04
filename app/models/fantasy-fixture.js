@@ -411,6 +411,7 @@ export default class FantasyFixtureModel extends Model {
   onThePitch(firstEleven) {
     return firstEleven.filterBy('appearance.canBeSubbedOut', false);
   }
+
   groupedOnThePitch(onThePitch) {
     return new Map([
       ...GROUP_BY_POSITIONS,

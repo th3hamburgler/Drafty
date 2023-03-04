@@ -28,7 +28,8 @@ const ACCESS_KEY = 'f9a0d214fd6ea502e71561e1117c5f0d',
   LEAGUE_ELEMENTS = `${DRAFT_API}/league/46575/element-status`,
   EVENTS_LIVE = `${DRAFT_API}/event/:game_week_id/live`,
   BOOTSTRAP_STATIC = `${FPL_API}/bootstrap-static/`,
-  FIXTURES = `${FPL_API}/fixtures`,
+  // FIXTURES = `${FPL_API}/fixtures`,
+  // https://fantasy.premierleague.com/api/fixtures/?event=25 the stats attr of each match will show current bonus rankings
   PICKS = `${DRAFT_API}/entry/:manager_id/event/:event_id`,
   TRANSACTIONS = `${DRAFT_API}/draft/league/46575/transactions`;
 
