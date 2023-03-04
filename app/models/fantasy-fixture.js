@@ -40,6 +40,10 @@ export default class FantasyFixtureModel extends Model {
     return this.league_entry_2_points > this.league_entry_1_points;
   }
 
+  get draw() {
+    return this.league_entry_1_points === this.league_entry_2_points;
+  }
+
   get statusColor() {
     // pending
     if (!this.started) {

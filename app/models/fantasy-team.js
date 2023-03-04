@@ -33,6 +33,53 @@ export default class FantasyTeamModel extends Model {
     return this.transactions.filterBy().filterBy('kind', 'di').length;
   }
 
+  get lastFiveFixtures() {
+    if (this.homeFixtures && this.awayFixtures) {
+      let lastFive = [
+        ...this.homeFixtures.toArray(),
+        ...this.awayFixtures.toArray(),
+      ].filterBy('finished', true);
+
+      lastFive.sort((a, b) => a.get('gameWeek.id') - b.get('gameWeek.id'));
+
+      return lastFive.slice(-5).map((fixture) => {
+        let color, tip;
+        if (fixture.get('home.id') === this.id) {
+          // home team
+          if (fixture.homeWin) {
+            color = 'lime';
+            tip = `Beat ${fixture.get('away.entry_name')}`;
+          } else if (fixture.awayWin) {
+            color = 'red';
+            tip = `Lost to ${fixture.get('away.entry_name')}`;
+          } else {
+            color = 'cyan';
+            tip = `Drew with ${fixture.get('away.entry_name')}`;
+          }
+        } else {
+          // away team
+          if (fixture.awayWin) {
+            color = 'lime';
+            tip = `Beat ${fixture.get('home.entry_name')}`;
+          } else if (fixture.homeWin) {
+            color = 'red';
+            tip = `Lost to ${fixture.get('home.entry_name')}`;
+          } else {
+            color = 'cyan';
+            tip = `Drew with ${fixture.get('home.entry_name')}`;
+          }
+        }
+
+        return {
+          color,
+          fixture,
+          tip,
+        };
+      });
+    }
+    return [];
+  }
+
   @cached
   get totalLostBenchPoints() {
     let points = 0;
