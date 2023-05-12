@@ -21,6 +21,10 @@ export default class FantasyTeamModel extends Model {
 
   // Getters
 
+  get fixtures() {
+    return [...this.homeFixtures.toArray(), ...this.awayFixtures.toArray()];
+  }
+
   get fullName() {
     return `${this.player_first_name} ${this.player_last_name}`;
   }
@@ -35,10 +39,7 @@ export default class FantasyTeamModel extends Model {
 
   get lastFiveFixtures() {
     if (this.homeFixtures && this.awayFixtures) {
-      let lastFive = [
-        ...this.homeFixtures.toArray(),
-        ...this.awayFixtures.toArray(),
-      ].filterBy('finished', true);
+      let lastFive = this.fixtures.filterBy('finished', true);
 
       lastFive.sort((a, b) => a.get('gameWeek.id') - b.get('gameWeek.id'));
 

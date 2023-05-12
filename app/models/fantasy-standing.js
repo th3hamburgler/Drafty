@@ -1,6 +1,11 @@
 import Model, { attr, belongsTo } from '@ember-data/model';
+import { inject as service } from '@ember/service';
 
 export default class FantasyStandingModel extends Model {
+  // Services
+
+  @service('fpl-api') fplApi;
+
   // Attributes
 
   @attr('number') last_rank;
@@ -46,5 +51,29 @@ export default class FantasyStandingModel extends Model {
 
   get pointsAgainstPerGame() {
     return Math.round(this.points_against / this.matches_played);
+  }
+
+  get liveTotal() {
+    const gameWeek = this.fplApi.currentGameWeek;
+
+    if (gameWeek.finished) {
+      return this.total;
+    } else {
+      return this.total + this.lastGameWeekPoints;
+    }
+  }
+
+  get lastGameWeekPoints() {
+    const team = this.get('team'),
+      currentFixture = team.get('fixtures').find((fixture) => {
+        return fixture.get('gameWeek.is_current');
+      });
+
+    if (currentFixture.get('home.id') === team.get('id')) {
+      return currentFixture.homePoints;
+    }
+    if (currentFixture.get('away.id') === team.get('id')) {
+      return currentFixture.awayPoints;
+    }
   }
 }

@@ -255,6 +255,7 @@ export default class FplApiService extends Service {
       let result;
 
       if (Live && Live[gameWeekId]) {
+        // console.log(`Task: ${gameWeekId} cached`);
         result = { data: Live[gameWeekId] };
       } else {
         result = await axios.get(

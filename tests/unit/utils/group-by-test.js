@@ -1,25 +1,26 @@
 import groupBy from 'drafty/utils/group-by';
 import { module, test } from 'qunit';
 
-const students = [
-  { name: 'Alice', grade: 'A' },
-  { name: 'Bob', grade: 'B' },
-  { name: 'Charlie', grade: 'A' },
-  { name: 'Dave', grade: 'C' },
-  { name: 'Eve', grade: 'B' },
-  { name: 'Frank', grade: 'C' },
-];
+module('Unit | Utility | groupBy', function () {
+  test('it groups objects by property', function (assert) {
+    const list = [
+      { name: 'Alice', age: 25 },
+      { name: 'Bob', age: 30 },
+      { name: 'Charlie', age: 25 },
+      { name: 'Dave', age: 30 },
+    ];
+    const result = groupBy(list, 'age');
 
-module('Unit | Utility | group-by', function () {
-  test('groups items in an array by a specified key', function (assert) {
-    let result = groupBy(students, 'grade');
-
-    assert.equal(result.size, 3);
-
-    assert.deepEqual(result.get('A'), [students[0], students[2]]);
-
-    assert.deepEqual(result.get('B'), [students[1], students[4]]);
-
-    assert.deepEqual(result.get('C'), [students[3], students[5]]);
+    assert.equal(result.size, 2, 'Result should have 2 groups');
+    assert.deepEqual(
+      result.get(25),
+      [list[0], list[2]],
+      'Group 1 should have Alice and Charlie'
+    );
+    assert.deepEqual(
+      result.get(30),
+      [list[1], list[3]],
+      'Group 2 should have Bob and Dave'
+    );
   });
 });

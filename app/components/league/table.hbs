@@ -58,10 +58,11 @@
         </td>
         <td class="whitespace-nowrap py-4 px-3 text-center text-lg md:text-2xl">
           {{standing.total}}
+          {{!-- {{standing.liveTotal}} --}}
         </td>
         <td
           class="relative whitespace-nowrap py-4 px-3 pr-6 text-right text-lg md:text-2xl"
-        >+3</td>
+        >+ {{standing.lastGameWeekPoints}}</td>
       </tr>
     {{/each}}
   </tbody>
